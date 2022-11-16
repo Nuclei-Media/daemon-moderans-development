@@ -58,7 +58,6 @@ class CompressionImpl(CompressionObject):
         :param app_path: Literal["video", "image", "misc"]
         :type app_path: Literal["video", "image", "misc"]
         """
-        """Initialise the class with the rate and file to compress"""
         print("app path ", app_path)
         self.app_path = app_path
         self.path_variation = {
@@ -97,21 +96,13 @@ class CompressionImpl(CompressionObject):
     def cleanup_file(self, temp_file: str) -> None:
         """
         > This function takes a file name as a parameter, and deletes the file
-        
+
         :param temp_file: The path to the temporary file that will be created
         :type temp_file: str
         """
         pathlib.Path(temp_file).unlink()
 
     def temp_compression_save(self, file_path: str) -> str:
-        """
-        It takes a file path, finds the index of the word "temp_file" in the file path, and then returns a
-        new file path with the word "compressed_temp" in place of "temp_file"
-        
-        :param file_path: str = "C:\Users\User\Desktop\temp_file_uuid.txt"
-        :type file_path: str
-        :return: The file path of the compressed file.
-        """
 
         temp_file_index = file_path.find("temp_file")
 
@@ -124,7 +115,7 @@ class CompressionImpl(CompressionObject):
     def commit_to_ipfs(self, file, filename: str, user, db) -> str:
         """
         It takes a file, a filename, a user, and a database, and returns a cid
-        
+
         :param file: the file object
         :param filename: str = the name of the file
         :type filename: str

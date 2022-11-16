@@ -13,19 +13,20 @@ class Nuclei(FastAPI):
         description: str = "Nuclei API",
         version: str = "0.1.0"
     ):
-        """
-        The function __init__() is a constructor that initializes the class NucleiAPI
-
-        Arguments:
-
-        * `title`: The title of your API.
-        * `description`: A short description of the API.
-        * `version`: str = "0.1.0"
-        """
 
         super().__init__(title=title, description=description, version=version)
         self.add_models()
         self.add_routes()
+        self.socket_init()
+
+    def socket_init(self):
+        """
+        It initializes the socket manager
+        """
+
+        from .syncing_service.sync_service_main import socket_manager
+
+        socket_manager.mount_to("/ws", app=self)
 
     def configure_middlware(self):
         """
@@ -47,10 +48,12 @@ class Nuclei(FastAPI):
 
         from nuclei_backend.users.main import users_router
         from nuclei_backend.storage_service.main import storage_service
+        from nuclei_backend.syncing_service.sync_service_main import sync_router
 
         self.include_router(storage_service)
 
         self.include_router(users_router)
+        self.include_router(sync_router)
 
     def add_models(self):
         """
