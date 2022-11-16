@@ -3,6 +3,7 @@ from importlib.resources import path
 from typing import Final
 
 
+# It's a class that defines a bunch of constants
 class Config(object):
 
     IPFS_CONNECT_URL: Final = "/ip4/127.0.0.1/tcp/5001/http"

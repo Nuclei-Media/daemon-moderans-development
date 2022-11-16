@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta, timezone
+
 from typing import Dict, Final, Literal, Union
 
+# The class is a configuration class that contains the secret key, the algorithm, and the access token
+# expiration time
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -32,6 +35,7 @@ def create_access_token(
     expire_delta: Union[int, timedelta]
     | None = UsersConfig.ACCESS_TOKEN_EXPIRE_MINUTES,
 ):
+
     data_to_encode = data.copy()
     if expire_delta:
         expire = datetime.now(timezone.utc) + expire_delta
@@ -46,6 +50,7 @@ def authenticate_user(
     password: str,
     db: user_handler_utils.Session = Depends(user_handler_utils.get_db),
 ):
+
     if user := get_user_by_username(db, username=username):
         return (
             user
@@ -53,14 +58,14 @@ def authenticate_user(
             else False
         )
 
-    else:
-        return False
+    return False
 
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: user_handler_utils.Session = Depends(user_handler_utils.get_db),
 ):
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

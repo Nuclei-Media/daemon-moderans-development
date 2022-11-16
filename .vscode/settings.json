@@ -1,5 +1,7 @@
 {
     "cSpell.words": [
         "COMPRESSIONLEVEL"
-    ]
+    ],
+    "docwriter.style": "RustDoc",
+    "docwriter.progress.trackClasses": true
 }

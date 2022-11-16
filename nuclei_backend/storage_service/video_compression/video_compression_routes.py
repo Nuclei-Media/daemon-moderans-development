@@ -22,6 +22,20 @@ async def compress_task(
     identity_token: str = Depends(get_current_user),
     db=Depends(get_db),
 ):
+    """
+    It takes a video file, compresses it, and then uploads it to IPFS.
+
+    Args:
+      files (List[UploadFile]): List[UploadFile] - This is a list of files that are uploaded.
+      rate (str): str = "lossless". Defaults to lossless
+      ipfs_flag (bool | None): bool | None = True. Defaults to True
+      identity_token (str): str = Depends(get_current_user),
+      db: This is the database connection object.
+
+    Returns:
+      The return value is a tuple of the response body and the status code.
+    """
+
     for file in files:
         _file = file.file
         _file = _file.read()

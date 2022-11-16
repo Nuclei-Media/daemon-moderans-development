@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import contextlib
 import datetime
-import hashlib
 import logging
 import os
 import os.path
@@ -25,24 +24,31 @@ from .ipfs_schema import IpfsCreate
 
 def ensure_dir(path: str) -> None:
     """
-    Ensure that a directory exists.
-    Args:
-        path: The path to the directory.
+    > If the directory doesn't exist, create it
+
+    Arguments:
+
+    * `path`: str
     """
+
     pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
 
 def save_temp_file(file, filename: str) -> str:
-    r"""
-    Save a file to the temporary folder.
-    Args:
-        file: The file to save.
-        filename: The filename of the file.
-    Returns:
-        The path to the file.
-        >>> save_temp_file(file)
-        >>> C:\Users\...\nuclei_backend\storage_service\temp\temp.txt
     """
+    It takes a file and a filename, saves the file to a temporary folder, and returns the path to the
+    file
+
+    Arguments:
+
+    * `file`: The file that was uploaded
+    * `filename`: The name of the file that was uploaded.
+
+    Returns:
+
+    The file path of the file that was saved.
+    """
+
     unique_id = str(uuid4())
     _filename = f"filename{unique_id}{filename[-4:]}"
     _file_path = os.path.join(Config.TEMP_FOLDER, _filename)
@@ -53,15 +59,19 @@ def save_temp_file(file, filename: str) -> str:
     return _file_path
 
 
-def generate_hash(cid: LiteralString) -> str:
+def remove(path):
+    os.remove(path)
 
+
+def generate_hash(cid: LiteralString) -> str:
     """
-    Generate a hash for the file.
-    Args:
-        cid: The cid of the file.
-    Usage:
-    >>> hash = generate_hash(cid)
+    It generates a hash of a file on IPFS using the IPFS CLI
+
+    :param cid: The CID of the file you want to get the hash of
+    :type cid: LiteralString
+    :return: The hash of the file.
     """
+
     path = str(Config.TEMP_FOLDER)
     unique_id = str(uuid4())
     _bat_path = os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.bat")
@@ -76,23 +86,27 @@ def generate_hash(cid: LiteralString) -> str:
     with open(_buffer_path, "r") as f:
         hash = f.read().strip()
 
-    os.remove(_bat_path)
-    os.remove(_buffer_path)
+    remove(_bat_path)
+    remove(_buffer_path)
 
     return hash
 
 
 def produce_cid(file: bytes, filename: str) -> LiteralString:
     """
-    Produce a CID for a file. using celery and gevent to handle traffic
-    Args:
-        file: The file to produce a CID for.
-        filename: The filename of the file.
+    It takes a file and a filename, saves the file to a temporary folder, runs a command in the terminal
+    to add the file to IPFS, and returns the CID of the file.
+
+    Arguments:
+
+    * `file`: bytes
+    * `filename`: The name of the file you want to upload
+
     Returns:
-        A CID for the file.
-        >>> produce_cid(file)
-        >>> QmegzqBL9FpNCHjgNwY3aEKq1ADp7JUonDb5K23QLmbh43y
+
+    The CID of the file.
     """
+
     print(Config.TEMP_FOLDER)
     if not os.path.exists(Config.TEMP_FOLDER):
         ensure_dir(Config.TEMP_FOLDER)
@@ -117,19 +131,33 @@ def produce_cid(file: bytes, filename: str) -> LiteralString:
     with open(_buffer_path, "r") as f:
         cid = f.read().strip()
 
-    os.remove(_bat_path)
-    os.remove(_buffer_path)
+    remove(_bat_path)
+    remove(_buffer_path)
     pathlib.Path(_temp_file_path).unlink()
 
     return cid
 
 
-def assemble_record(
-    file: bytes,
-    filename: str,
-    cid: LiteralString = None,
-    owner_id: int = None,
-):
+def assemble_record(file: bytes, filename: str, cid: str, owner_id: int = None):
+    """It takes a file, filename, and cid, and returns a DataStorage object with the file_name, file_cid,
+    file_hash, file_size, file_type, file_upload_date, and owner_id attributes
+
+    Parameters
+    ----------
+    file : bytes
+        bytes
+    filename : str
+        The name of the file
+    cid : str
+        The content identifier of the file.
+    owner_id : int
+        The user who uploaded the file
+
+    Returns
+    -------
+        A DataStorage object
+
+    """
 
     return DataStorage(
         file_name=filename,

@@ -1,3 +1,5 @@
+# It's a class that contains constants.
+# Importing the routes from the auth_routes and user_handler files.
 from typing import Final
 
 
