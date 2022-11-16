@@ -2,18 +2,11 @@ import random
 from .sync_service_main import sync_router, socket_manager
 from .sync_utils import get_user_cids, get_collective_bytes, paginate_using_gb
 from .sync_utils import UserDataExtraction
-import logging
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from ..users.auth_utils import get_current_user
-
 from ..users.user_models import User
-
-
-import subprocess
 from ..users.user_handler_utils import get_db
-from ..storage_service.ipfs_model import DataStorage
-import socketio
 import uuid
 
 
