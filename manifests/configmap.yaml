@@ -1,0 +1,10 @@
+apiVersion: v1
+kind : ConfigMap
+metadata:
+  name: nuclei-config
+data:
+  POSTGRES_HOST: host.docker.internal
+  POSTGRES_USER: postgres
+  POSTGRES_DB: users
+  POSTGRES_PASSWORD: postgrespw
+  POSTGRES_PORT: "49153"

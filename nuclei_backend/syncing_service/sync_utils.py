@@ -6,20 +6,21 @@ import typing
 from fastapi import Depends, HTTPException
 
 from ..users.auth_utils import get_current_user
-from ..users.user_models import User
-
-from ..storage_service.ipfs_model import DataStorage
 from ..users.user_handler_utils import get_db
+
+from ..users.user_models import User
+from ..storage_service.ipfs_model import DataStorage
 
 
 def get_user_cids(user_id, db) -> list:
     """
-    It returns a list of all the DataStorage objects that have the same owner_id as the user_id passed in
+    It takes a user_id and a database session as input, and returns a list of DataStorage objects
+    that have the same owner_id as the user_id
 
     Arguments:
 
-    * `user_id`: the user's id
-    * `db`: SQLAlchemy database object
+    * `user_id`: int
+    * `db`: Session = Depends(get_db)
 
     Returns:
 
@@ -27,13 +28,14 @@ def get_user_cids(user_id, db) -> list:
     """
 
     try:
-        return db.query(DataStorage).filter(DataStorage.owner_id == user_id).all()
+        query = db.query(DataStorage).filter(DataStorage.owner_id == user_id).all()
+        return query
     except Exception as e:
         logging.error(e)
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
 
-def get_collective_bytes(user_id: int, db) -> int:
+def get_collective_bytes(user_id, db):
     """
     It takes a user_id and a database session as input, and returns the sum of the file_size of all the
     DataStorages that have the same owner_id as the user_id
@@ -56,12 +58,7 @@ def get_collective_bytes(user_id: int, db) -> int:
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
 
-def paginate_using_gb(
-    user_id: int,
-    db,
-    page_size: Optional[None | int] = 10,
-    page: Optional[None | int] = 1,
-) -> list[list[DataStorage]]:
+def paginate_using_gb(user_id, db, page_size=10, page=1):
     """
     A function that divides the records into pages which is a nested list with the size of the nested
     list's record being determined through the files record's file_size adding up to a gigabyte
@@ -107,19 +104,6 @@ def paginate_using_gb(
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
 
-file_bytes_type = typing.NewType(
-    "file_bytes_type",
-    list[
-        dict[
-            User.id,
-            DataStorage.file_name,
-            DataStorage.file_type,
-            bytes,
-        ]
-    ],
-)
-
-
 class UserDataExtraction:
     def __init__(self, user_id):
         """
@@ -137,7 +121,7 @@ class UserDataExtraction:
 
             self.db = Depends(get_db)
             self.user_data = get_user_cids(self.user_id, self.db)
-            self.file_bytes: file_bytes_type = []
+            self.file_bytes = []
 
     def file_bytes_serializer(self):
         # use file_byte_generator to get the file_bytes and append it to the file_bytes list

@@ -10,8 +10,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
 import uvicorn
-from google.oauth2 import id_token
-from google.auth.transport import requests
 
 # import db
 from .auth_utils import Token, authenticate_user, create_access_token, get_current_user
@@ -56,31 +54,6 @@ def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@users_router.get("/google_route")
-def login_for_google_token(request: Request, token: str):
-    """
-    It takes a token from the frontend, verifies it with Google, and then sets the user's email in the
-    session
-
-    Args:
-      request (Request): Request: The request object.
-      token (str): The token that was sent to the server.
-
-    Returns:
-      The user's name and the string "logged in successfully"
-    """
-    try:
-        user = id_token.verify_oauth2_token(
-            token,
-            requests.Request(),
-            "1027503910283-a1idj5qtv6ikms7k4rp0ldh025ogp1sg.apps.googleusercontent.com",
-        )
-        request.session["user"] = dict({"email": user["email"]})
-        return user["name"] + "logged in successfully"
-    except ValueError:
-        return "unauthorized"
-
-
 @users_router.get("/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
     """
@@ -93,18 +66,3 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
       The current user.
     """
     return current_user
-
-
-@users_router.get("/token_fetch")
-async def get_token_google(request: Request):
-    """
-    It returns a string that says "hi" and the user's name
-
-    Args:
-      request (Request): Request
-
-    Returns:
-      "hi None"
-    """
-
-    return "hi " + str(request.session.get("user"))

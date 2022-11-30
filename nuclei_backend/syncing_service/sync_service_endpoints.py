@@ -26,3 +26,25 @@ async def dispatch_files(
         await socket_manager.emit("dispatch", page)
 
     return {"message": "Dispatched", "request id": request_id}
+
+
+@sync_router.get("/dispatch/all")
+def dispatch_all(
+    user: User = Depends(get_current_user),
+    db=Depends(get_db),
+):
+
+    cids = get_user_cids(user.id, db)
+    queried_bytes = get_collective_bytes(user.id, db)
+
+    # # paginate and dispatch the files through the socketio connection
+    pages = paginate_using_gb(queried_bytes, user.id, db)
+    # for page in pages:
+    #     socket_manager.emit("dispatch", page)
+
+    return {
+        "message": "Dispatched",
+        "cids": cids,
+        "bytes": queried_bytes,
+        "pages": {"paginate": pages},
+    }

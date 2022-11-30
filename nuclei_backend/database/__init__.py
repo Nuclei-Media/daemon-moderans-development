@@ -6,13 +6,14 @@ from sqlalchemy.orm import sessionmaker
 
 path = pathlib.Path(__file__).parent.absolute()
 
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{path}/nuclei.db"
+
+SQLALCHEMY_DATABASE_URI = (
+    "postgresql://postgres:postgrespw@host.docker.internal:49153/postgres"
+)
+
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={
-        "check_same_thread": False,
-    },
+    SQLALCHEMY_DATABASE_URI,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
