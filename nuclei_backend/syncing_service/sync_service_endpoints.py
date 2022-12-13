@@ -21,9 +21,6 @@ async def dispatch_files(
     queried_bytes = get_collective_bytes(user.id, db)
 
     # paginate and dispatch the files through the socketio connection
-    pages = paginate_using_gb(queried_bytes, user.id, db)
-    for page in pages:
-        await socket_manager.emit("dispatch", page)
 
     return {"message": "Dispatched", "request id": request_id}
 
@@ -37,14 +34,9 @@ def dispatch_all(
     cids = get_user_cids(user.id, db)
     queried_bytes = get_collective_bytes(user.id, db)
 
-    # # paginate and dispatch the files through the socketio connection
-    pages = paginate_using_gb(queried_bytes, user.id, db)
-    # for page in pages:
-    #     socket_manager.emit("dispatch", page)
-
+    # paginate and dispatch the files through the socketio connection
     return {
         "message": "Dispatched",
         "cids": cids,
         "bytes": queried_bytes,
-        "pages": {"paginate": pages},
     }

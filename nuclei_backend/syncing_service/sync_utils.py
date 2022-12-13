@@ -52,7 +52,7 @@ def get_collective_bytes(user_id, db):
 
     try:
         query = db.query(DataStorage).filter(DataStorage.owner_id == user_id).all()
-        return sum(record.file_size for record in query)
+        return sum(x.file_size for x in query)
     except Exception as e:
         logging.error(e)
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
@@ -60,7 +60,7 @@ def get_collective_bytes(user_id, db):
 
 def paginate_using_gb(user_id, db, page_size=10, page=1):
     """
-    A function that divides the records into pages which is a nested list with the size of the nested
+    A function that divides the records into a nested list with the size of the nested
     list's record being determined through the files record's file_size adding up to a gigabyte
 
     Arguments:
@@ -76,29 +76,13 @@ def paginate_using_gb(user_id, db, page_size=10, page=1):
     """
 
     try:
-        # get all the records that belong to the user_id
-        records = get_user_cids(user_id, db)
-        # sort the records by file_size
-        records.sort(key=lambda x: x.file_size, reverse=True)
-        # get the collective bytes
-        collective_bytes = get_collective_bytes(user_id, db)
-        # get the number of pages
-        pages = collective_bytes // (1024**3) + 1
-        # initialize an empty list
-        paginated_records = []
-        # initialize the start and end index
-        start = 0
-        end = 0
-        # loop through the number of pages
-        for _ in range(pages):
-            # set the end index to be the start index + page_size
-            end = start + page_size
-            # append the records from the start index to the end index
-            paginated_records.append(records[start:end])
-            # set the start index to be the end index
-            start = end
-        # return the paginated records
-        return paginated_records
+        query = db.query(DataStorage).filter(DataStorage.owner_id == user_id).all()
+        if not query:
+            raise HTTPException(status_code=404, detail="No records found")
+        page = page - 1
+        start = page * page_size
+        end = start + page_size
+        return query[start:end]
     except Exception as e:
         logging.error(e)
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
