@@ -138,15 +138,7 @@ class UserDataExtraction:
             )
 
     def download_file_ipfs(self, cid: str, record: DataStorage):
-        """
-        It downloads a file from IPFS using the local ipget executable
 
-        Arguments:
-
-        * `cid`: the content identifier of the file
-        * `record`: DataStorage = field(metadata={"data_key": "record"})
-        """
-        # use subprocess the download the file using the local ipget executable and return the files bytes
         file_bytes = subprocess.run(
             ["ipget", "-o", "-", cid], capture_output=True, text=True
         ).stdout

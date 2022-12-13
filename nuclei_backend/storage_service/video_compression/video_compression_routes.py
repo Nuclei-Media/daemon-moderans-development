@@ -22,29 +22,19 @@ async def compress_task(
     identity_token: str = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    """
-    It takes a video file, compresses it, and then uploads it to IPFS.
-
-    Args:
-      files (List[UploadFile]): List[UploadFile] - This is a list of files that are uploaded.
-      rate (str): str = "lossless". Defaults to lossless
-      ipfs_flag (bool | None): bool | None = True. Defaults to True
-      identity_token (str): str = Depends(get_current_user),
-      db: This is the database connection object.
-
-    Returns:
-      The return value is a tuple of the response body and the status code.
-    """
+    print("Compressing video...")
 
     for file in files:
         _file = file.file
         _file = _file.read()
+        print("File: ", file.filename)
 
         if identity_token is None:
             return {"message": "Unauthorised user"}, status.HTTP_401_UNAUTHORIZED
         if not file:
             return {"error": "No file uploaded"}
         try:
+            print("Saving file to temp location...")
             temp_dir = save_to_temp(_file)
 
         except Exception as e:
@@ -53,9 +43,13 @@ async def compress_task(
             return {
                 "error": "Could not save file to temporary location"
             }, status.HTTP_400_BAD_REQUEST
+        print("File saved to temp location")
         compressing_video = CompressVideo(rate, temp_dir)
+        print("Compressing video...")
         compressed_video = compressing_video.produce_compression()
+        print("Video compressed")
         if ipfs_flag:
+            print("Uploading to IPFS...")
             compressing_video.commit_to_ipfs(
                 compressed_video, file.filename, identity_token, db
             )
