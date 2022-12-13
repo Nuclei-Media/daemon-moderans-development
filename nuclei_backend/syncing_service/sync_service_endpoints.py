@@ -1,13 +1,14 @@
 import random
-from .sync_service_main import sync_router, socket_manager
-from .sync_utils import get_user_cids, get_collective_bytes, paginate_using_gb
-from .sync_utils import UserDataExtraction
+import uuid
 
 from fastapi import Depends
+
 from ..users.auth_utils import get_current_user
-from ..users.user_models import User
 from ..users.user_handler_utils import get_db
-import uuid
+from ..users.user_models import User
+from .sync_service_main import socket_manager, sync_router
+from .sync_utils import (UserDataExtraction, get_collective_bytes,
+                         get_user_cids, paginate_using_gb)
 
 
 @sync_router.get("/dispatch")

@@ -1,7 +1,8 @@
+import math
 import random
 from typing import List
+
 from quick_sort import quick_sort
-import math
 
 bytes_example = [random.randint(1024**3, 5000**3) for _ in range(10)]
 

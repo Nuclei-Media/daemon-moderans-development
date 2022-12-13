@@ -1,9 +1,10 @@
-from ticketing import TicketCache
-from chunk_producer import ChunkProducer
+import math
 import os
 import subprocess
 import time
-import math
+
+from chunk_producer import ChunkProducer
+from ticketing import TicketCache
 
 
 def coroutine(func):

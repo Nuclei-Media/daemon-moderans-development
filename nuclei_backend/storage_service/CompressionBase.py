@@ -13,7 +13,7 @@ class CompressionImpl:
         self.path_variation = {
             "video": (
                 pathlib.Path(__file__).parent.joinpath("video_compression")
-                / "_compression_temp",
+                / "_compression_temp"
             ),
             "image": (
                 pathlib.Path(__file__).parent.joinpath("image_compression")
@@ -26,7 +26,6 @@ class CompressionImpl:
         }
 
     def save_to_temp(self, file_bytes: bytes, filename) -> tuple:
-
         temp_dir = self.path_variation[self.app_path]
         temp_dir.mkdir(exist_ok=True)
         self.file_type = filename[int(filename.index(".")) :]
@@ -41,7 +40,7 @@ class CompressionImpl:
         pathlib.Path(temp_file).unlink()
 
     def temp_compression_save(self, file_path: str) -> str:
-
+        print("calling temp compression save")
         temp_file_index = file_path.find("temp_file")
 
         parsed_file_path: str = file_path[:temp_file_index]

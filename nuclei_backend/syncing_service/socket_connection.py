@@ -1,5 +1,5 @@
-from fastapi import FastAPI
 import socketio
+from fastapi import FastAPI
 
 
 class SocketManager:
