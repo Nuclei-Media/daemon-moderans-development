@@ -7,8 +7,12 @@ from ..users.auth_utils import get_current_user
 from ..users.user_handler_utils import get_db
 from ..users.user_models import User
 from .sync_service_main import socket_manager, sync_router
-from .sync_utils import (UserDataExtraction, get_collective_bytes,
-                         get_user_cids, paginate_using_gb)
+from .sync_utils import (
+    UserDataExtraction,
+    get_collective_bytes,
+    get_user_cids,
+    paginate_using_gb,
+)
 
 
 @sync_router.get("/dispatch")
@@ -35,6 +39,12 @@ def dispatch_all(
     cids = get_user_cids(user.id, db)
     queried_bytes = get_collective_bytes(user.id, db)
 
+    files = UserDataExtraction(user.id)
+    try:
+        for _ in range(len(cids)):
+            files.download_file_ipfs(cids[_].file_cid, cids[_].file_name)
+    except Exception as e:
+        raise e from e
     # paginate and dispatch the files through the socketio connection
     return {
         "message": "Dispatched",

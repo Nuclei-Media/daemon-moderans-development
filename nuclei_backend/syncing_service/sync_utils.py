@@ -120,11 +120,17 @@ class UserDataExtraction:
                 }
             )
 
-    def download_file_ipfs(self, cid: str, record: DataStorage):
+    def download_file_ipfs(self, cid: str, filename):  # ticket_identity
+        import os, pathlib
 
-        file_bytes = subprocess.run(
-            ["ipget", "-o", "-", cid], capture_output=True, text=True
-        ).stdout
+        os.popen(
+            f"cd {pathlib.Path(__file__).parent}\queued "  # && mkdir {ticket_identity}
+        )
+        file = (
+            pathlib.Path(__file__).parent
+            / f"ipget.exe {cid} -o {pathlib.Path(__file__).parent}\queued\{filename} --progress=true"
+        )
+        os.popen(str(f"{file}"))
 
     def file_byte_generator(self):
         # generator which yields the file bytes from the function download_file_ipfs

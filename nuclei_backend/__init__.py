@@ -48,6 +48,7 @@ class Nuclei(FastAPI):
 
         from nuclei_backend.users.main import users_router
         from nuclei_backend.storage_service.main import storage_service
+
         from nuclei_backend.syncing_service.sync_service_main import sync_router
 
         self.include_router(storage_service)
