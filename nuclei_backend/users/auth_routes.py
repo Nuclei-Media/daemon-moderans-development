@@ -10,6 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
 import uvicorn
+from noknow.core import ZK, ZKSignature, ZKParameters, ZKData, ZKProof
+from queue import Queue
+from threading import Thread
 
 # import db
 from .auth_utils import Token, authenticate_user, create_access_token, get_current_user
@@ -17,23 +20,14 @@ from .main import users_router
 from .user_models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/token")
+from fastapi.param_functions import Form
 
 
-@users_router.post("/token", response_model=Token)
+@users_router.post("/token")
 def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db=Depends(user_handler_utils.get_db),
 ):
-    """
-    It takes a username and password, checks if the user exists, and if so, returns a token.
-
-    Args:
-      form_data (OAuth2PasswordRequestForm): OAuth2PasswordRequestForm = Depends()
-      db: Depends(user_handler_utils.get_db)
-
-    Returns:
-      A token
-    """
 
     user = authenticate_user(
         username=form_data.username,
@@ -52,17 +46,3 @@ def login_for_access_token(
         expire_delta=access_token_expires,
     )
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@users_router.get("/me")
-async def read_users_me(current_user: User = Depends(get_current_user)):
-    """
-    The function `read_users_me` is a FastAPI route handler that returns the current user
-
-    Args:
-      current_user (User): User = Depends(get_current_user)
-
-    Returns:
-      The current user.
-    """
-    return current_user

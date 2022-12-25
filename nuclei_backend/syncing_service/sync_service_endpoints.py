@@ -1,4 +1,5 @@
 import random
+import time
 import uuid
 
 from fastapi import Depends
@@ -39,10 +40,13 @@ def dispatch_all(
     cids = get_user_cids(user.id, db)
     queried_bytes = get_collective_bytes(user.id, db)
 
-    files = UserDataExtraction(user.id)
+    files = UserDataExtraction(user.id, cids)
     try:
         for _ in range(len(cids)):
             files.download_file_ipfs(cids[_].file_cid, cids[_].file_name)
+            # if files.insurance():
+            #     continue
+            # time.sleep(0.1)
     except Exception as e:
         raise e from e
     # paginate and dispatch the files through the socketio connection
