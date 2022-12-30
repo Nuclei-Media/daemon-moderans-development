@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .socket_connection import SocketManager
+from .utils.socket_connection import SocketManager
 
 sync_router = APIRouter(prefix="/data/sync")
 

@@ -45,4 +45,10 @@ def login_for_access_token(
         data={"sub": user.username},
         expire_delta=access_token_expires,
     )
+
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@users_router.get("/me")
+def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user

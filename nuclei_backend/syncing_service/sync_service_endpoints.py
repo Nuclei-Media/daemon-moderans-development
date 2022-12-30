@@ -55,3 +55,12 @@ def dispatch_all(
         "cids": cids,
         "bytes": queried_bytes,
     }
+
+
+import requests
+
+
+@sync_router.get("/dispatch/test")
+def dispatch_test(user: User = Depends(get_current_user)):
+    k = requests.get("http://localhost:8002/info_test", params={"token": user})
+    return k.json()

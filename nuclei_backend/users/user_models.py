@@ -1,7 +1,9 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 
-from ..database import Base
+from ..database import Base, engine
+
+# iterate through the table and print the column names
 
 
 class User(Base):
@@ -18,3 +20,4 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     data = relationship("DataStorage", back_populates="owner")
+    permanent_store = relationship("PermanentStore", back_populates="user_relationship")
