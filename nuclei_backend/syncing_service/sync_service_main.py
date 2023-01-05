@@ -1,10 +1,8 @@
 from fastapi import APIRouter
-
-from .utils.socket_connection import SocketManager
+import redis
 
 sync_router = APIRouter(prefix="/data/sync")
+redis_connection = redis.Redis(host="localhost", port=6379, db=0)
 
-socket_manager = SocketManager()
-socket_manager.on("connect", handler=lambda sid, environ: print("connect ", sid))
 
 from .sync_service_endpoints import *

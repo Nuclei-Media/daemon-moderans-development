@@ -27,7 +27,7 @@ async def compress_task_image(
         _filename = file.filename
 
         if identity_token is None:
-            return {"message": "Unauthorised user"}, status.HTTP_401_UNAUTHORIZED
+            return {"message": "Unauthorized user"}, status.HTTP_401_UNAUTHORIZED
         if not file:
             return {"error": "No file uploaded"}
 

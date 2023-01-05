@@ -52,7 +52,9 @@ class CompressionImpl:
     def commit_to_ipfs(self, file, filename: str, user, db) -> str:
 
         cid: str = produce_cid(file, filename)
+        print("cid ", cid)
         data_record = assemble_record(file, filename, cid, user.id)
-
+        print("data record ", data_record)
         db.add(data_record)
+        print("data record added to db")
         db.commit()

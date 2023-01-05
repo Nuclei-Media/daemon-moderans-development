@@ -3,53 +3,36 @@ import time
 import uuid
 
 from fastapi import Depends
+from functools import total_ordering, lru_cache
 
 from ..users.auth_utils import get_current_user
 from ..users.user_handler_utils import get_db
 from ..users.user_models import User
-from .sync_service_main import socket_manager, sync_router
+from .sync_service_main import sync_router
 from .sync_utils import (
     UserDataExtraction,
     get_collective_bytes,
     get_user_cids,
-    paginate_using_gb,
 )
+from .sync_user_cache import FileListener, RedisController, SchedulerController
 
 
-@sync_router.get("/dispatch")
-async def dispatch_files(
-    user: User = Depends(get_current_user),
-    db=Depends(get_db),
-):
-    request_id = str(uuid.uuid4())
-    request_id = request_id[random.randint(1, 40) : random.randint(41, 80)] = user.id
-    cids = get_user_cids(user.id, db)
-    queried_bytes = get_collective_bytes(user.id, db)
-
-    # paginate and dispatch the files through the socketio connection
-
-    return {"message": "Dispatched", "request id": request_id}
-
-
-@sync_router.get("/dispatch/all")
-def dispatch_all(
-    user: User = Depends(get_current_user),
-    db=Depends(get_db),
-):
+@sync_router.get("/fetch/all")
+async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db)):
 
     cids = get_user_cids(user.id, db)
     queried_bytes = get_collective_bytes(user.id, db)
 
-    files = UserDataExtraction(user.id, cids)
+    files = UserDataExtraction(user.id, db, cids)
     try:
         for _ in range(len(cids)):
             files.download_file_ipfs(cids[_].file_cid, cids[_].file_name)
-            # if files.insurance():
-            #     continue
-            # time.sleep(0.1)
+            time.sleep(1)
+        # set up the redis cache
+        FileListener(user.id)
+
     except Exception as e:
         raise e from e
-    # paginate and dispatch the files through the socketio connection
     return {
         "message": "Dispatched",
         "cids": cids,
@@ -57,10 +40,13 @@ def dispatch_all(
     }
 
 
-import requests
+@sync_router.get("/fetch/redis/all")
+async def redis_cache_all(user: User = Depends(get_current_user), db=Depends(get_db)):
+    # get all redis cache pertaining to the user
+    all_files = RedisController().serialize_user_files(user.id)
+    return {
+        "files": all_files,
+    }
 
 
-@sync_router.get("/dispatch/test")
-def dispatch_test(user: User = Depends(get_current_user)):
-    k = requests.get("http://localhost:8002/info_test", params={"token": user})
-    return k.json()
+# TODO - design an event listener for the redis cache file store

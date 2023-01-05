@@ -1,10 +1,14 @@
-from fastapi import Depends, File, Form, HTTPException, UploadFile
+import typing
+from fastapi import Depends, File, Form, HTTPException, UploadFile, status
 
-from nuclei_backend.permanent_store import permanent_store_model
-from nuclei_backend.permanent_store.main import permanent_store_router
+from . import permanent_store_model
+from .main import permanent_store_router
 
-from nuclei_backend.permanent_store.chunking import scan_for_ccif_files
-from nuclei_backend.permanent_store.file_handlers import FileDigestion, NormaliseFile
+from .chunking import Reconstruct, scan_for_ccif_files
+from .file_handlers import FileDigestion, NormaliseFile
+
+from ..users.auth_utils import get_current_user
+from ..users.user_handler_utils import get_db
 
 
 @permanent_store_router.post("/info_test")
@@ -26,7 +30,7 @@ async def file_digestion(
             FileDigestion(file).remove()
     except Exception as e:
         raise HTTPException(
-            status_code=statistics.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=e,
         ) from e
 
