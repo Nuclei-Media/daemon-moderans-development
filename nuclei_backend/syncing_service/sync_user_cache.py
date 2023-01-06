@@ -84,6 +84,16 @@ class FileListener(SchedulerController):
 
     @lru_cache(maxsize=None)
     def create_job(self, folder_uuid: str, user_id: str, file_names: List[str]):
+        """
+        It creates a job that runs every 10 seconds and calls the file_listener function with the
+        user_id and file_names as arguments.
+
+        Arguments:
+
+        * `folder_uuid`: The unique identifier of the folder that the user is watching.
+        * `user_id`: The user id of the user who uploaded the files
+        * `file_names`: List[str]
+        """
         try:
             self.add_job(
                 job_id=folder_uuid,

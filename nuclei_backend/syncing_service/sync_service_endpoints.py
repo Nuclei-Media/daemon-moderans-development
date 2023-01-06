@@ -29,7 +29,7 @@ async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db
             files.download_file_ipfs(cids[_].file_cid, cids[_].file_name)
             time.sleep(1)
         # set up the redis cache
-        FileListener(user.id)
+        FileListener(user.id).create_job(files.session_id, user.id, files.file_names)
 
     except Exception as e:
         raise e from e
@@ -47,6 +47,3 @@ async def redis_cache_all(user: User = Depends(get_current_user), db=Depends(get
     return {
         "files": all_files,
     }
-
-
-# TODO - design an event listener for the redis cache file store
