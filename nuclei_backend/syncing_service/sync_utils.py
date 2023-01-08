@@ -13,6 +13,7 @@ from ..users.user_models import User
 from .sync_user_cache import FileListener, RedisController, SchedulerController
 from uuid import uuid4
 from pathlib import Path
+import json
 
 
 def get_user_cids(user_id, db) -> list:
@@ -39,36 +40,40 @@ class UserDataExtraction:
     def __init__(self, user_id, db, cids: list):
         self.user_id = user_id
         self.session_id = uuid4()
+        print("inside class session_id", self.session_id)
 
         self.db = db
         self.user_data = get_user_cids(self.user_id, self.db)
         self.file_bytes = []
         self.cids = cids
-        self.ipget_path = Path(__file__).parent / "ipget.exe"
+        self.ipget_path = Path(__file__).parent / "utils\ipget.exe"
         self.new_folder = (
             f"{Path(__file__).parent}\FILE_PLAYING_FIELD\{self.session_id}"
         )
 
-    def download_file_ipfs(self, cid: str, filename: str):
-
+    def download_file_ipfs(self):
         os.mkdir(self.new_folder)
         os.chdir(self.new_folder)
-        file = f"{self.ipget_path} --node=local {cid} -o {filename} --progress=true"
+        for _ in self.cids:
+            file = f"{self.ipget_path} --node=local {_.file_cid} -o {_.file_name} --progress=true"
 
-        subprocess.Popen(str(f"{file}"))
-        print(f"Downloading {filename} - {cid} - {self.session_id}")
-        time.sleep(5)
+            subprocess.Popen(str(f"{file}"))
+            print(f"Downloading {_.file_name} - {_.file_cid} - {self.session_id}")
+            time.sleep(5)
         self.write_file_summary()
 
     def write_file_summary(self):
-        # write a summary of the files downloaded into the self.session_id.internal.txt
-        for _ in self.cids:
-            if not os.path.isfile(f"{_.file_name}"):
-                return False
-            with open(f"{self.session_id}.internal.txt", "w") as _file:
 
-                _file.write(f"\n{_.file_name}\n{_.file_size}\n{_.file_cid}\n")
-                _file.close()
+        file_sum = {
+            _.file_name: {
+                "file_name": _.file_name,
+                "file_cid": _.file_cid,
+                "file_size": _.file_size,
+            }
+            for _ in self.cids
+        }
+        with open(f"{self.session_id}.internal.json", "w") as f:
+            json.dump(file_sum, f)
 
     def insurance(self) -> bool:
         for _ in self.cids:

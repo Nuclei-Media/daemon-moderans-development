@@ -5,7 +5,6 @@ import time
 from typing import Final
 from uuid import uuid4
 
-import ffmpeg
 import lz4.frame
 from fastapi import File
 from lz4.block import compress, decompress
