@@ -84,3 +84,7 @@ class UserDataExtraction:
                 return False
             del _bytes
         return True
+
+    def cleanup(self):
+        os.chdir(Path(__file__).parent)
+        os.rmdir(self.new_folder)

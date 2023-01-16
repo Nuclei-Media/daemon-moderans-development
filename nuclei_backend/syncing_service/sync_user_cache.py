@@ -1,20 +1,19 @@
 import json
-from typing import List
 import redis
 import time
 import pathlib
-import os
-import sys
 from apscheduler.schedulers.background import BackgroundScheduler
-from uuid import uuid4
 from functools import lru_cache
 from .scheduler_config import SchConfig
-from typing import Dict, TypedDict
+
+import base64
 
 
 class RedisController:
     def __init__(self):
-        self.redis_connection = redis.Redis(host="localhost", port=6379, db=0)
+        self.redis_connection = redis.Redis().from_url(
+            url="redis://localhost:6379/0", decode_responses=True
+        )
 
     def set_files(self, user: id, file: list[dict[str, bytes]]):
 
@@ -26,6 +25,10 @@ class RedisController:
 
     def clear_cache(self, user: str):
         return self.redis_connection.delete(user)
+
+    def check_files(self, user: str):
+
+        return self.redis_connection.exists(user)
 
 
 class SchedulerController:
@@ -41,6 +44,9 @@ class SchedulerController:
     @lru_cache(maxsize=None)
     def start_scheduler(self):
         self.scheduler.start()
+
+    def check_scheduler(self):
+        return self.scheduler.running
 
     @lru_cache(maxsize=None)
     def add_job(self, job_id, func, trigger, **kwargs):
@@ -73,10 +79,13 @@ class FileListener(SchedulerController):
             dispatch_dict = {str(self.user_id): []}
 
             for _ in data:
-                with open(_[0], "rb+") as file_read_buffer:
+                with open(_[0], "rb") as file_read_buffer:
                     file_read_buffer = file_read_buffer.read()
 
                 dispatch_dict[str(self.user_id)].append(
-                    {_[0]: str(file_read_buffer).encode("utf+8")}
+                    {str(_[0]): base64.encodebytes(file_read_buffer).decode()}
                 )
+            # replace all ' with " in the dict
+            dispatch_dict = str(dispatch_dict).replace("'", '"')
+            # convert the dict to json
             self.redis_controller.set_files(self.user_id, dispatch_dict)

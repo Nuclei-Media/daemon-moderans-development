@@ -2,7 +2,7 @@ import random
 import time
 import uuid
 from functools import lru_cache, total_ordering
-
+import json
 from fastapi import Depends
 
 from ..storage_service.ipfs_model import DataStorage
@@ -21,9 +21,22 @@ async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db
     queried_bytes = get_collective_bytes(user.id, db)
 
     files = UserDataExtraction(user.id, db, cids)
+    # check if files are already in redis cache
+    if RedisController().check_files(str(user.id)):
+        return {
+            "message": "Files are already in cache",
+            "cids": cids,
+            "bytes": queried_bytes,
+        }
+
     try:
         files.download_file_ipfs()
         FileListener(user.id, files.session_id).file_listener()
+        if SchedulerController().check_scheduler():
+            SchedulerController().start_scheduler()
+        # cleanup the files after 10 seconds
+        time.sleep(10)
+        files.cleanup_files()
 
     except Exception as e:
         print(e)
@@ -35,16 +48,19 @@ async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db
 
 
 @sync_router.get("/fetch/redis/all")
-async def redis_cache_all(user: User = Depends(get_current_user), db=Depends(get_db)):
+async def redis_cache_all(user: User = Depends(get_current_user)):
     # get all redis cache pertaining to the user
     all_files = RedisController().get_files(str(user.id))
+    # extract the json from all_files
+    all_files = json.loads(all_files)
+
     return {
         "files": all_files,
     }
 
 
 @sync_router.get("/fetch/redis/clear")
-async def redis_cache_clear(user: User = Depends(get_current_user), db=Depends(get_db)):
+async def redis_cache_clear(user: User = Depends(get_current_user)):
     return RedisController().clear_cache(str(user.id))
 
 
