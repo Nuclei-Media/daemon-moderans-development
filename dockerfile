@@ -8,16 +8,18 @@ RUN apt-get update && apt-get install -y \
     python3-setuptools \
     python3-wheel \
     && rm -rf /var/lib/apt/lists/*
+
 RUN pip3 install --upgrade pip
-RUN pip3 install python-multipart
 # install mysql  client
 RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 RUN pip3 install --upgrade setuptools
 RUN pip install --no-cache-dir --upgrade pip
+USER root
 WORKDIR /app
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 COPY . /app
-EXPOSE 8000
-CMD ["python3", "main.py"]
+EXPOSE 8080
+ENV LISTEN_PORT=8080
+CMD ["uvicorn", "nuclei_backend:app", "--host=0.0.0.0", "--port=8080", "--workers=4"]

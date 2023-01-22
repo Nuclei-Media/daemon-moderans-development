@@ -36,10 +36,10 @@ async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db
             SchedulerController().start_scheduler()
         # cleanup the files after 10 seconds
         time.sleep(10)
-        files.cleanup_files()
 
     except Exception as e:
-        print(e)
+        raise e
+    files.cleanup()
     return {
         "message": "Dispatched",
         "cids": cids,
@@ -57,6 +57,15 @@ async def redis_cache_all(user: User = Depends(get_current_user)):
     return {
         "files": all_files,
     }
+
+
+# delete all files
+@sync_router.post("/fetch/delete/all")
+def delete_all(user: User = Depends(get_current_user), db=Depends(get_db)):
+
+    db.query(DataStorage).delete()
+    db.commit()
+    return {"message": "deleted"}
 
 
 @sync_router.get("/fetch/redis/clear")

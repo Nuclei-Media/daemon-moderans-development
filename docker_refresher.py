@@ -4,7 +4,11 @@ import subprocess
 def docker_refresher():
     # get the output
     output = subprocess.check_output(
-        "docker build .", shell=True, text=True, stderr=subprocess.STDOUT
+        "docker build .",
+        shell=True,
+        text=True,
+        encoding="utf-8",
+        stderr=subprocess.STDOUT,
     )
     print(output)
     # extract the image id
@@ -24,9 +28,13 @@ def docker_refresher():
     print(image_id)
 
     pusher = subprocess.check_output(
-        f"docker tag {image_id} ronnytec/nuclei:latest", shell=True
+        f"docker tag {image_id} ronnytec/nuclei:latest",
+        shell=True,
+        encoding="utf-8",
+        stderr=subprocess.STDOUT,
     )
     subprocess.call("docker push ronnytec/nuclei:latest", shell=True)
+    subprocess.call("docker-compose up --user root", shell=True)
 
 
 if __name__ == "__main__":

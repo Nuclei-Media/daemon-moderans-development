@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 path = pathlib.Path(__file__).parent.absolute()
 
 
-SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgrespw@localhost:49153"
+SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgrespw@postgres:5432"
 
 
 engine = create_engine(

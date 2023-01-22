@@ -5,17 +5,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from nuclei_backend.users import user_handler_utils
 
-from typing import Optional
-from fastapi.middleware.cors import CORSMiddleware
-from starlette.requests import Request
-from starlette.middleware.sessions import SessionMiddleware
-import uvicorn
-from noknow.core import ZK, ZKSignature, ZKParameters, ZKData, ZKProof
-from queue import Queue
-from threading import Thread
 
 # import db
-from .auth_utils import Token, authenticate_user, create_access_token, get_current_user
+from .auth_utils import authenticate_user, create_access_token, get_current_user
 from .main import users_router
 from .user_models import User
 

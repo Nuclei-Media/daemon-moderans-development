@@ -1,0 +1,31 @@
+volumes:
+  data:
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=postgrespw
+    ports:
+      - 5432:5432
+    volumes:
+      - data:/var/lib/postgresql
+
+  nuclei_backend:
+    image: ronnytec/nuclei:latest
+    ports:
+        - 8080:8080
+    user: root
+  redis-server:
+    image: redis:latest
+    ports:
+      - 6379:6379
+  rabbitmq:
+    image: rabbitmq:latest
+    ports:
+      - 5672:5672
+  ipfs:
+    image: ipfs/kubo:latest
+
+
+    
