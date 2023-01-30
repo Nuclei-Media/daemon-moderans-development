@@ -16,35 +16,46 @@ from .sync_utils import UserDataExtraction, get_collective_bytes, get_user_cids
 
 @sync_router.get("/fetch/all")
 async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db)):
-
     cids = get_user_cids(user.id, db)
     queried_bytes = get_collective_bytes(user.id, db)
-
     files = UserDataExtraction(user.id, db, cids)
-    # check if files are already in redis cache
-    if RedisController().check_files(str(user.id)):
-        return {
-            "message": "Files are already in cache",
-            "cids": cids,
-            "bytes": queried_bytes,
-        }
+
+    redis_controller = RedisController()
+
+    if redis_controller.check_files(str(user.id)):
+        cached_file_count = redis_controller.get_file_count(str(user.id))
+        if cached_file_count == len(cids):
+            return {
+                "message": "Files are already in cache",
+                "cids": cids,
+                "bytes": queried_bytes,
+            }
+        else:
+            redis_controller.delete_file_count(str(user.id))
 
     try:
         files.download_file_ipfs()
-        FileListener(user.id, files.session_id).file_listener()
-        if SchedulerController().check_scheduler():
-            SchedulerController().start_scheduler()
-        # cleanup the files after 10 seconds
+        file_listener = FileListener(user.id, files.session_id)
+        file_listener.file_listener()
+
+        scheduler_controller = SchedulerController()
+        if scheduler_controller.check_scheduler():
+            scheduler_controller.start_scheduler()
+
         time.sleep(10)
 
     except Exception as e:
         raise e
+    
+    redis_controller.set_file_count(str(user.id), len(cids))
     files.cleanup()
+
     return {
         "message": "Dispatched",
         "cids": cids,
         "bytes": queried_bytes,
     }
+
 
 
 @sync_router.get("/fetch/redis/all")

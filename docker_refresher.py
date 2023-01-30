@@ -34,7 +34,7 @@ def docker_refresher():
         stderr=subprocess.STDOUT,
     )
     subprocess.call("docker push ronnytec/nuclei:latest", shell=True)
-    subprocess.call("docker-compose up --user root", shell=True)
+    subprocess.call("docker-compose up", shell=True)
 
 
 if __name__ == "__main__":

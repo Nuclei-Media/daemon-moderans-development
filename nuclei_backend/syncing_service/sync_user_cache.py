@@ -12,7 +12,7 @@ import base64
 class RedisController:
     def __init__(self):
         self.redis_connection = redis.Redis().from_url(
-            url="redis://localhost:6379/0", decode_responses=True
+            url="redis://default:redispw@localhost:6379", decode_responses=True
         )
 
     def set_files(self, user: id, file: list[dict[str, bytes]]):

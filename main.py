@@ -14,11 +14,12 @@ def print_ip():
         .split("IPv4 Address. . . . . . . . . . . : ")[1]
         .split("Subnet Mask")[0]
     )
-    print(f"\nserver running on : http://{ip.strip()}:8080\n")
+    return f"\nserver running on : http://{ip.strip()}:8080\n"
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+    logging.log(1, print_ip())
     uvicorn.run(
         "nuclei_backend:app",
         port=8080,

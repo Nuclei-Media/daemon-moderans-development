@@ -40,7 +40,6 @@ class UserDataExtraction:
     def __init__(self, user_id, db, cids: list):
         self.user_id = user_id
         self.session_id = uuid4()
-        print("inside class session_id", self.session_id)
 
         self.db = db
         self.user_data = get_user_cids(self.user_id, self.db)
