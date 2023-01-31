@@ -40,7 +40,6 @@ class CompressionImpl:
         pathlib.Path(temp_file).unlink()
 
     def temp_compression_save(self, file_path: str) -> str:
-        print("calling temp compression save")
         temp_file_index = file_path.find("temp_file")
 
         parsed_file_path: str = file_path[:temp_file_index]
@@ -52,9 +51,6 @@ class CompressionImpl:
     def commit_to_ipfs(self, file, filename: str, user, db) -> str:
 
         cid: str = produce_cid(file, filename)
-        print("cid ", cid)
         data_record = assemble_record(file, filename, cid, user.id)
-        print("data record ", data_record)
         db.add(data_record)
-        print("data record added to db")
         db.commit()

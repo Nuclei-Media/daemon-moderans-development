@@ -46,7 +46,7 @@ async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db
 
     except Exception as e:
         raise e
-    
+
     redis_controller.set_file_count(str(user.id), len(cids))
     files.cleanup()
 
@@ -55,7 +55,6 @@ async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db
         "cids": cids,
         "bytes": queried_bytes,
     }
-
 
 
 @sync_router.get("/fetch/redis/all")

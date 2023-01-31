@@ -30,6 +30,19 @@ class RedisController:
 
         return self.redis_connection.exists(user)
 
+    def set_file_count(self, user: str, count: int):
+        return self.redis_connection.set(f"{user}_count", count)
+
+    def get_file_count(self, user: str):
+        return (
+            int(self.redis_connection.get(f"{user}_count"))
+            if self.redis_connection.exists(f"{user}_count")
+            else 0
+        )
+
+    def delete_file_count(self, user: str):
+        return self.redis_connection.delete(f"{user}_count")
+
 
 class SchedulerController:
     def __init__(self):

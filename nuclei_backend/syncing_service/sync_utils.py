@@ -1,5 +1,6 @@
 from functools import total_ordering, lru_cache
 import logging
+import shutil
 import subprocess
 import time
 
@@ -85,5 +86,8 @@ class UserDataExtraction:
         return True
 
     def cleanup(self):
-        os.chdir(Path(__file__).parent)
-        os.rmdir(self.new_folder)
+        shutil.rmtree(
+            pathlib.Path(self.new_folder),
+            ignore_errors=False,
+        )
+        os.remove(pathlib.Path(self.new_folder).parent),
