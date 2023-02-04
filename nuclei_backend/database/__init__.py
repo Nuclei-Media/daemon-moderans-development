@@ -7,11 +7,13 @@ from sqlalchemy.orm import sessionmaker
 path = pathlib.Path(__file__).parent.absolute()
 
 
-SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgrespw@localhost:5432"
+SQLALCHEMY_DATABASE_URI1 = "postgresql://postgres:postgrespw@localhost:5432"
+SQLALCHEMY_DATABASE_URI2 = "postgresql://postgres:postgrespw@postgres:5432"
+SQLALCHEMY_DATABASE_URI3 = "postgresql://postgres:postgrespw@host.docker.internal:5432"
 
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URI,
+    SQLALCHEMY_DATABASE_URI1,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -12,20 +12,25 @@ services:
       - data:/var/lib/postgresql
 
   nuclei_backend:
-    image: ronnytec/nuclei:latest
+    # image: ronnytec/nuclei:latest
+    build:
+      context: .
+      dockerfile: backend.dockerfile
     ports:
         - 8080:8080
     user: root
+    privileged: true
+
+    
   redis-server:
     image: redis:latest
     ports:
       - 6379:6379
-  rabbitmq:
-    image: rabbitmq:latest
-    ports:
-      - 5672:5672
   ipfs:
     image: ipfs/kubo:latest
-
-
-    
+    restart: unless-stopped
+    ports:
+      - 4001:4001/tcp
+      - 4001:4001/udp
+      - 127.0.0.1:5001:5001
+      - 127.0.0.1:8081:8081

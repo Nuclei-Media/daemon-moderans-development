@@ -4,26 +4,28 @@ import uvicorn
 import subprocess
 from nuclei_backend import app
 
-# add logging for the app
 
-
-def print_ip():
+def ip_addy():
     ip = (
         subprocess.check_output("ipconfig")
         .decode("utf-8")
         .split("IPv4 Address. . . . . . . . . . . : ")[1]
         .split("Subnet Mask")[0]
     )
-    return f"\nserver running on : http://{ip.strip()}:8080\n"
+    return f"\nserver runniyng on : http://{ip.strip()}:8080\n"
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    logging.log(1, print_ip())
+    logging.log(1, ip_addy())
+    print(ip_addy())
     uvicorn.run(
         "nuclei_backend:app",
-        port=8080,
+        host="0.0.0.0",
+        port=80,
         workers=4,
         reload=True,
         use_colors=True,
+        ssl_keyfile="./nucleibackend.systems+2-key.pem",
+        ssl_certfile="./nucleibackend.systems+2.pem",
     )

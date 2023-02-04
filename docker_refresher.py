@@ -2,39 +2,50 @@ import subprocess
 
 
 def docker_refresher():
-    # get the output
+    # build the Docker image
+    build_command = "docker build ."
     output = subprocess.check_output(
-        "docker build .",
+        build_command,
         shell=True,
         text=True,
         encoding="utf-8",
         stderr=subprocess.STDOUT,
     )
     print(output)
+
     # extract the image id
-    image_id = output.split("writing image")[1].split("\n")[0]
-    # remove the whitespace
-    print(image_id)
-    image_id = image_id.strip()
-    # remove the sha256:
-    print(image_id)
-    image_id = image_id.split("sha256:")[1]
-    # remove the whitespace
-    image_id = image_id.strip()
-    # remove the trailing comma
-    image_id = image_id.split("done")[0]
-    # remove the whitespace
-    image_id = image_id.strip()
+    image_id = (
+        output.split("writing image")[1]
+        .split("\n")[0]
+        .strip()
+        .split("sha256:")[1]
+        .strip()
+        .split("done")[0]
+        .strip()
+    )
     print(image_id)
 
+    # tag the image
+    tag_command = f"docker tag {image_id} ronnytec/nuclei:latest"
     pusher = subprocess.check_output(
-        f"docker tag {image_id} ronnytec/nuclei:latest",
+        tag_command,
         shell=True,
         encoding="utf-8",
         stderr=subprocess.STDOUT,
     )
-    subprocess.call("docker push ronnytec/nuclei:latest", shell=True)
-    subprocess.call("docker-compose up", shell=True)
+    print(pusher)
+
+    # push the image
+    push_command = "docker push ronnytec/nuclei:latest"
+    subprocess.call(push_command, shell=True)
+
+    # build the Docker Compose containers
+    build_compose_command = "docker-compose build"
+    subprocess.call(build_compose_command, shell=True)
+
+    # run the Docker Compose containers
+    run_compose_command = "docker-compose up"
+    subprocess.call(run_compose_command, shell=True)
 
 
 if __name__ == "__main__":
