@@ -31,16 +31,6 @@ async def upload(
     db=Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    It takes a file, produces a CID, generates a hash, and then adds the file to the database
-
-    :param file_name: UploadFile = File()
-    :type file_name: UploadFile
-    :param db: the database connection
-    :param current_user: User = Depends(get_current_user),
-    :type current_user: User
-    :return: The CID, hash, user_id, and status.
-    """
     print("Uploading file")
     # get the file name
     file: bytes = file_name.file.read()
