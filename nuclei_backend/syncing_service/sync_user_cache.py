@@ -16,6 +16,7 @@ class RedisController:
         )
 
     def set_files(self, user: id, file: list[dict[str, bytes]]):
+
         return self.redis_connection.set(str(user), str(file))
 
     def get_files(self, user: str):
@@ -26,6 +27,7 @@ class RedisController:
         return self.redis_connection.delete(user)
 
     def check_files(self, user: str):
+
         return self.redis_connection.exists(user)
 
     def set_file_count(self, user: str, count: int):

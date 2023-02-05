@@ -12,6 +12,7 @@ services:
       - data:/var/lib/postgresql
 
   nuclei_backend:
+    # image: ronnytec/nuclei:latest
     build:
       context: .
       dockerfile: backend.dockerfile
@@ -25,8 +26,6 @@ services:
     image: redis:latest
     ports:
       - 6379:6379
-    volumes:
-      - data:/data
   ipfs:
     image: ipfs/kubo:latest
     restart: unless-stopped
