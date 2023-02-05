@@ -1,0 +1,20 @@
+volumes:
+  data:
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=postgrespw
+    ports:
+      - 5432:5432
+    volumes:
+      - data:/var/lib/postgresql
+
+  redis-server:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - data:/data
+
