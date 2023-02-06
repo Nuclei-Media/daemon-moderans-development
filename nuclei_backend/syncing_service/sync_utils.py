@@ -92,13 +92,11 @@ class UserDataExtraction:
             del _bytes
         return True
 
-    def cleanup(self):
+    async def cleanup(self):
         with contextlib.suppress(PermissionError):
-            shutil.rmtree(
+            os.chdir(pathlib.Path(self.new_folder).parent)
+
+            await shutil.rmtree(
                 pathlib.Path(self.new_folder),
                 ignore_errors=False,
             )
-
-            os.remove(pathlib.Path(self.new_folder))
-            os.remove(pathlib.Path(self.new_folder).parent.absolute())
-
