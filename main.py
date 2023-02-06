@@ -1,18 +1,17 @@
 import logging
+import subprocess
 
 import uvicorn
-import subprocess
-from nuclei_backend import app
 
 
 def ip_addy():
     ip = (
         subprocess.check_output("ipconfig")
         .decode("utf-8")
-        .split("IPv4 Address. . . . . . . . . . . : ")[1]
+        .split("IPv4 Address. . . . . . . . . . . : ")[2]
         .split("Subnet Mask")[0]
     )
-    return f"\nserver runniyng on : http://{ip.strip()}:8000\n"
+    return f"\nserver runniyng on : https://{ip.strip()}:8000\n"
 
 
 if __name__ == "__main__":
