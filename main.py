@@ -12,7 +12,7 @@ def ip_addy():
         .split("IPv4 Address. . . . . . . . . . . : ")[1]
         .split("Subnet Mask")[0]
     )
-    return f"\nserver runniyng on : http://{ip.strip()}:8080\n"
+    return f"\nserver runniyng on : http://{ip.strip()}:8000\n"
 
 
 if __name__ == "__main__":
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "nuclei_backend:app",
         host="0.0.0.0",
-        port=80,
+        port=8000,
         workers=4,
         reload=True,
         use_colors=True,

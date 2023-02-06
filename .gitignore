@@ -34,6 +34,7 @@ __pycache__/
 *.odc
 *.lz4
 
+/ipfs
 
 # Distribution / packaging
 pip-wheel-metadata/

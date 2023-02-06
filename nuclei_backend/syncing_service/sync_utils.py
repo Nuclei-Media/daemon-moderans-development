@@ -1,3 +1,4 @@
+import contextlib
 from functools import total_ordering, lru_cache
 import logging
 import shutil
@@ -15,10 +16,10 @@ from .sync_user_cache import FileListener, RedisController, SchedulerController
 from uuid import uuid4
 from pathlib import Path
 import json
+import contextlib
 
 
 def get_user_cids(user_id, db) -> list:
-
     try:
         query = db.query(DataStorage).filter(DataStorage.owner_id == user_id).all()
         return query
@@ -28,7 +29,6 @@ def get_user_cids(user_id, db) -> list:
 
 
 def get_collective_bytes(user_id, db):
-
     try:
         query = db.query(DataStorage).filter(DataStorage.owner_id == user_id).all()
         return sum(x.file_size for x in query)
@@ -52,28 +52,35 @@ class UserDataExtraction:
         )
 
     def download_file_ipfs(self):
-        os.mkdir(self.new_folder)
-        os.chdir(self.new_folder)
-        for _ in self.cids:
-            file = f"{self.ipget_path} --node=local {_.file_cid} -o {_.file_name} --progress=true"
+        with contextlib.suppress(PermissionError):
+            os.mkdir(self.new_folder)
+            os.chdir(self.new_folder)
+            for _ in self.cids:
+                try:
+                    file = f"{self.ipget_path} --node=local {_.file_cid} -o {_.file_name} --progress=true"
 
-            subprocess.Popen(str(f"{file}"))
-            print(f"Downloading {_.file_name} - {_.file_cid} - {self.session_id}")
-            time.sleep(5)
-        self.write_file_summary()
+                    subprocess.Popen(str(f"{file}"))
+                    print(
+                        f"Downloading {_.file_name} - {_.file_cid} - {self.session_id}"
+                    )
+                    time.sleep(5)
+                except Exception as e:
+                    print(f"this is the error: {e}")
+                    raise e
+            self.write_file_summary()
 
     def write_file_summary(self):
-
-        file_sum = {
-            _.file_name: {
-                "file_name": _.file_name,
-                "file_cid": _.file_cid,
-                "file_size": _.file_size,
+        with contextlib.suppress(PermissionError):
+            file_sum = {
+                _.file_name: {
+                    "file_name": _.file_name,
+                    "file_cid": _.file_cid,
+                    "file_size": _.file_size,
+                }
+                for _ in self.cids
             }
-            for _ in self.cids
-        }
-        with open(f"{self.session_id}.internal.json", "w") as f:
-            json.dump(file_sum, f)
+            with open(f"{self.session_id}.internal.json", "w") as f:
+                json.dump(file_sum, f)
 
     def insurance(self) -> bool:
         for _ in self.cids:
@@ -86,8 +93,12 @@ class UserDataExtraction:
         return True
 
     def cleanup(self):
-        shutil.rmtree(
-            pathlib.Path(self.new_folder),
-            ignore_errors=False,
-        )
-        os.remove(pathlib.Path(self.new_folder).parent),
+        with contextlib.suppress(PermissionError):
+            shutil.rmtree(
+                pathlib.Path(self.new_folder),
+                ignore_errors=False,
+            )
+
+            os.remove(pathlib.Path(self.new_folder))
+            os.remove(pathlib.Path(self.new_folder).parent.absolute())
+

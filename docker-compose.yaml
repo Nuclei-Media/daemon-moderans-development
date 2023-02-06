@@ -17,7 +17,7 @@ services:
       context: .
       dockerfile: backend.dockerfile
     ports:
-        - 8080:8080
+        - 8000:8000
     user: root
     privileged: true
 
@@ -32,5 +32,12 @@ services:
     ports:
       - 4001:4001/tcp
       - 4001:4001/udp
+      
+      # The following ports only listen on the loopback interface, so are not remotely reachable by default.
+      # If you want to override these or add more ports, see https://docs.docker.com/compose/extends/ .
+      
+      # API port, which includes admin operations, so you probably don't want this remotely accessible.
       - 127.0.0.1:5001:5001
-      - 127.0.0.1:8081:8081
+      
+      # HTTP Gateway
+      - 127.0.0.1:8080:8080
