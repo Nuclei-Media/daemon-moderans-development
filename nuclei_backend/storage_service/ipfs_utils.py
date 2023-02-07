@@ -29,7 +29,7 @@ def ensure_dir(path: str) -> None:
 def save_temp_file(file, filename: str) -> str:
     unique_id = str(uuid4())
     _filename = f"filename{unique_id}{filename[-4:]}"
-    _file_path = os.path.join(Config.TEMP_FOLDER, _filename)
+    _file_path = pathlib.PosixPath(os.path.join(Config.TEMP_FOLDER, _filename))
 
     with open(_file_path, "wb") as f:
         f.write(file)
@@ -44,10 +44,16 @@ def remove(path):
 def generate_hash(cid: LiteralString) -> str:
     path = str(Config.TEMP_FOLDER)
     unique_id = str(uuid4())
-    _bat_path = os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.bat")
-    _buffer_path = os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.txt")
+    _bat_path = pathlib.PosixPath(
+        os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.sh")
+    )
+    _buffer_path = pathlib.PosixPath(
+        os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.txt")
+    )
 
     with open(_bat_path, "w") as f:
+        f.write("#!/bin/sh")
+
         f.write(rf"cd {path}")
         f.write("\n")
         f.write(rf"{Config.KUBO_PATH} ls -v {cid} > hash{unique_id}.txt")
@@ -69,19 +75,28 @@ def produce_cid(file: bytes, filename: str) -> LiteralString:
     try:
         path = str(Config.TEMP_FOLDER)
         unique_id = str(uuid4())
-        _bat_path = os.path.join(Config.TEMP_FOLDER, f"cid{unique_id}.bat")
-        _buffer_path = os.path.join(Config.TEMP_FOLDER, f"cid{unique_id}.txt")
+        _bat_path = pathlib.PosixPath(
+            os.path.join(Config.TEMP_FOLDER, f"cid{unique_id}.sh")
+        )
+        _buffer_path = pathlib.PosixPath(
+            os.path.join(Config.TEMP_FOLDER, f"cid{unique_id}.txt")
+        )
+
         _temp_file_path = save_temp_file(file, filename)
     except Exception as e:
         raise e
     print(_temp_file_path)
 
     with open(_bat_path, "w") as f:
+        f.write("#!/bin/sh")
         f.write(rf"cd {path}")
         f.write("\n")
         f.write(
             rf"{Config.KUBO_PATH} add --quiet --pin {_temp_file_path} > {path}\cid{unique_id}.txt"
         )
+
+    os.chmod(_buffer_path, 0b111101101)
+
     call(_bat_path)
 
     with open(_buffer_path, "r") as f:
