@@ -22,11 +22,11 @@ services:
     image: redis:latest
     ports:
       - 6379:6379
-  ipfs:
-    image: ipfs/kubo:latest
-    restart: unless-stopped
-    ports:
-      - 4001:4001/tcp
-      - 4001:4001/udp
-      - 127.0.0.1:5001:5001
-      - 127.0.0.1:8080:8080
+  # ipfs:
+  #   image: ipfs/kubo:latest
+  #   restart: unless-stopped
+  #   ports:
+  #     - 4001:4001/tcp
+  #     - 4001:4001/udp
+  #     - 127.0.0.1:5001:5001
+  #     - 127.0.0.1:8080:8080

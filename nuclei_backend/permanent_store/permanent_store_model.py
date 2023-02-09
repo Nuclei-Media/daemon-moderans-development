@@ -12,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from ..database import Base, engine
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class PermanentStore(Base):
@@ -23,5 +24,5 @@ class PermanentStore(Base):
     filename = Column(String)
     file_hash = Column(String)
     upload_date = Column(DateTime)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     user_relationship = relationship("User", back_populates="permanent_store")

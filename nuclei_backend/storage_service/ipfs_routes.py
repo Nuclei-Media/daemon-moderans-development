@@ -38,8 +38,8 @@ async def upload(
         cid: str = produce_cid(file, file_name)
         if not cid:
             raise HTTPException(status_code=400, detail="Failed to produce CID")
-        hash: str = generate_hash(cid)
-        if not hash:
+        _hash: str = generate_hash(cid)
+        if not _hash:
             raise HTTPException(status_code=400, detail="Failed to generate hash")
         user: User = current_user
         if not user:
@@ -61,14 +61,14 @@ async def upload(
         db.commit()
 
     except sqlalchemy.exc.IntegrityError as e:
-        return {"message": "File already exists", "file_hash": hash}
+        return {"message": "File already exists", "file_hash": _hash}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
     return {
         "cid": cid,
-        "hash": hash,
+        "hash": _hash,
         "user_id": current_user.username,
         "status": "success",
     }
