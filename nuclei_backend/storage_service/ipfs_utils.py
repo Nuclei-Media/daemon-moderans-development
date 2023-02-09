@@ -54,12 +54,12 @@ def generate_hash(cid: LiteralString) -> str:
     call(_bat_path)
 
     with open(_buffer_path, "r") as f:
-        hash = f.read().strip()
+        _hash = f.read().strip()
 
     remove(_bat_path)
     remove(_buffer_path)
 
-    return hash
+    return _hash
 
 
 def produce_cid(file: bytes, filename: str) -> LiteralString:

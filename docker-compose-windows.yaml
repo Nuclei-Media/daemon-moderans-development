@@ -1,14 +1,16 @@
 volumes:
   data:
+
 services:
   postgres:
-    image: postgres:latest
+    image: stellirin/postgres-windows
     environment:
       - POSTGRES_PASSWORD=postgrespw
     ports:
       - 5432:5432
     volumes:
       - data:/var/lib/postgresql
+
   nuclei_backend:
     # image: ronnytec/nuclei:latest
     build:
@@ -18,15 +20,9 @@ services:
         - 8000:8000
     user: root
     privileged: true
+
+    
   redis-server:
-    image: redis:latest
+    image: redis:3.2-windowsservercore
     ports:
       - 6379:6379
-  ipfs:
-    image: ipfs/kubo:latest
-    restart: unless-stopped
-    ports:
-      - 4001:4001/tcp
-      - 4001:4001/udp
-      - 127.0.0.1:5001:5001
-      - 127.0.0.1:8080:8080
