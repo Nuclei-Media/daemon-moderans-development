@@ -59,7 +59,7 @@ async def dispatch_all(
         except Exception as e:
             raise e
 
-        background_tasks.add_task(redis_controller.set_file_count(), len(cids))
+        redis_controller.set_file_count(len(cids))
         background_tasks.add_task(files.cleanup())
         background_tasks.add_task(file_session_cache.activate_file_session())
 
@@ -71,8 +71,9 @@ async def dispatch_all(
 
 
 @sync_router.on_event("startup")
-@repeat_every(seconds=60 * 60)
+@repeat_every(seconds=1)
 def remove_false_folders():
+    print("hello")
     try:
         FileCacheEntry.check_and_delete_files()
     except Exception as e:

@@ -7,11 +7,12 @@ from uuid import uuid4
 
 # iterate through the table and print the column names
 
+# subscriptions = relationship("Subscription", back_populates="owner")
+# user_quotas = relationship("UserQuota", back_populates="owner")
+# usermetadata = relationship("UserMetaData", back_populates="owner")
+
 
 class User(Base):
-    # The User class is a Python class that inherits from the Base class. It has a bunch of columns that
-    # are defined as class attributes
-
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
@@ -21,8 +22,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     permanent_store = relationship("PermanentStore", back_populates="user_relationship")
-    # subscriptions = relationship("Subscription", back_populates="owner")
-    # user_quotas = relationship("UserQuota", back_populates="owner")
-    # usermetadata = relationship("UserMetaData", back_populates="owner")
+
     data = relationship("DataStorage", back_populates="owner")
-    chat_rooms = relationship("ChatRooms", back_populates="owner")
+    chat_rooms_owned = relationship("ChatRoom", back_populates="owner")
+    sent_messages = relationship("ChatMessage", back_populates="sender")
+    chat_rooms_joined = relationship("ChatRoomMembership", back_populates="user")
