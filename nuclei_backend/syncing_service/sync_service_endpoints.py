@@ -1,11 +1,7 @@
 import contextlib
 import json
-import os
-import pathlib
-import random
 import time
-import uuid
-from functools import lru_cache, total_ordering
+from functools import lru_cache
 
 from fastapi import Depends
 from fastapi_utils.tasks import repeat_every
@@ -22,10 +18,15 @@ from .sync_user_cache import (
     SchedulerController,
 )
 from .sync_utils import UserDataExtraction, get_collective_bytes, get_user_cids
+from fastapi.background import BackgroundTasks
 
 
 @sync_router.get("/fetch/all")
-async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db)):
+async def dispatch_all(
+    background_tasks: BackgroundTasks,
+    user: User = Depends(get_current_user),
+    db=Depends(get_db),
+):
     with contextlib.suppress(PermissionError):
         cids = get_user_cids(user.id, db)
         queried_bytes = get_collective_bytes(user.id, db)
@@ -43,31 +44,24 @@ async def dispatch_all(user: User = Depends(get_current_user), db=Depends(get_db
                     "bytes": queried_bytes,
                 }
             else:
-                await redis_controller.delete_file_count()
-
+                redis_controller.delete_file_count()
         try:
-            files.download_file_ipfs()
-            file_session_cache.activate_file_session()
+            background_tasks.add_task(files.download_file_ipfs())
+            background_tasks.add_task(file_session_cache.activate_file_session())
             file_listener = FileListener(user.id, files.session_id)
 
-            file_listener.file_listener()
-
+            background_tasks.add_task(file_listener.file_listener())
             scheduler_controller = SchedulerController()
-            if scheduler_controller.check_scheduler():
-                scheduler_controller.start_scheduler()
 
-            time.sleep(10)
+            if scheduler_controller.check_scheduler():
+                background_tasks.add_task(scheduler_controller.start_scheduler())
 
         except Exception as e:
             raise e
 
-        redis_controller.set_file_count(len(cids))
-
-        try:
-            await files.cleanup()
-        except Exception as e:
-            print(e)
-        file_session_cache.activate_file_session()
+        background_tasks.add_task(redis_controller.set_file_count(), len(cids))
+        background_tasks.add_task(files.cleanup())
+        background_tasks.add_task(file_session_cache.activate_file_session())
 
     return {
         "message": "Dispatched",

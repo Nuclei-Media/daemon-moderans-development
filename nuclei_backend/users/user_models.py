@@ -20,5 +20,9 @@ class User(Base):
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
 
-    data = relationship("DataStorage", back_populates="owner")
     permanent_store = relationship("PermanentStore", back_populates="user_relationship")
+    # subscriptions = relationship("Subscription", back_populates="owner")
+    # user_quotas = relationship("UserQuota", back_populates="owner")
+    # usermetadata = relationship("UserMetaData", back_populates="owner")
+    data = relationship("DataStorage", back_populates="owner")
+    chat_rooms = relationship("ChatRooms", back_populates="owner")

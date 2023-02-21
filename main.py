@@ -18,4 +18,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # logging.log(1, ip_addy())
     # print(ip_addy())
-    uvicorn.run("nuclei_backend:app", port=5000, reload=True, use_colors=True)
+    uvicorn.run(
+        "nuclei_backend:app",
+        host="0.0.0.0",
+        port=8000,
+        workers=4,
+        use_colors=True,
+        reload=True,
+    )

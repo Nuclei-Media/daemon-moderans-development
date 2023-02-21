@@ -41,7 +41,7 @@ class UserDataExtraction:
     def __init__(self, user_id, db, cids: list):
         self.user_id = user_id
         self.session_id = uuid4()
-
+        
         self.db = db
         self.user_data = get_user_cids(self.user_id, self.db)
         self.file_bytes = []
@@ -92,11 +92,11 @@ class UserDataExtraction:
             del _bytes
         return True
 
-    async def cleanup(self):
+    def cleanup(self):
         with contextlib.suppress(PermissionError):
             os.chdir(pathlib.Path(self.new_folder).parent)
 
-            await shutil.rmtree(
+            shutil.rmtree(
                 pathlib.Path(self.new_folder),
                 ignore_errors=False,
             )
