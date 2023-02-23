@@ -70,10 +70,13 @@ async def dispatch_all(
     }
 
 
+import datetime
+
+
 @sync_router.on_event("startup")
-@repeat_every(seconds=1)
+@repeat_every(seconds=60 * 60)
 def remove_false_folders():
-    print("hello")
+    print(f"clean up at {datetime.datetime.time()}")
     try:
         FileCacheEntry.check_and_delete_files()
     except Exception as e:
