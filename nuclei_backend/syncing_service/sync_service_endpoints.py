@@ -2,39 +2,43 @@ import contextlib
 import json
 import time
 from functools import lru_cache
+import datetime
+import os, pathlib
 
 from fastapi import Depends
-from fastapi_utils.tasks import repeat_every
 
 from ..storage_service.ipfs_model import DataStorage
 from ..users.auth_utils import get_current_user
 from ..users.user_handler_utils import get_db
 from ..users.user_models import User
-from .sync_service_main import sync_router
+from .sync_service_main import sync_router, async_scheduler
+from fastapi_utils.tasks import repeat_every
+
 from .sync_user_cache import (
     FileCacheEntry,
     FileListener,
     RedisController,
-    SchedulerController,
 )
 from .sync_utils import UserDataExtraction, get_collective_bytes, get_user_cids
 from fastapi.background import BackgroundTasks
 
 
+@lru_cache(maxsize=0)
 @sync_router.get("/fetch/all")
 async def dispatch_all(
     background_tasks: BackgroundTasks,
     user: User = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    with contextlib.suppress(PermissionError):
+    with contextlib.suppress(PermissionError, TypeError):
         cids = get_user_cids(user.id, db)
         queried_bytes = get_collective_bytes(user.id, db)
         files = UserDataExtraction(user.id, db, cids)
         file_session_cache = FileCacheEntry(files.session_id)
-
         redis_controller = RedisController(user=str(user.id))
 
+        if len(cids) == 0:
+            return {"message": "please upload files before fetching"}
         if redis_controller.check_files():
             cached_file_count = redis_controller.get_file_count()
             if cached_file_count == len(cids):
@@ -45,23 +49,18 @@ async def dispatch_all(
                 }
             else:
                 redis_controller.delete_file_count()
-        try:
-            background_tasks.add_task(files.download_file_ipfs())
-            background_tasks.add_task(file_session_cache.activate_file_session())
-            file_listener = FileListener(user.id, files.session_id)
-
-            background_tasks.add_task(file_listener.file_listener())
-            scheduler_controller = SchedulerController()
-
-            if scheduler_controller.check_scheduler():
-                background_tasks.add_task(scheduler_controller.start_scheduler())
-
-        except Exception as e:
-            raise e
-
+        await file_session_cache.activate_file_session()
+        await files.download_file_ipfs()
+        print("1")
+        file_listener = FileListener(user.id, files.session_id)
+        print("2")
+        background_tasks.add_task(file_listener.file_listener())
+        print("3")
         redis_controller.set_file_count(len(cids))
+        print("4")
+        await file_session_cache.deactivate_file_session()
+        print("5")
         background_tasks.add_task(files.cleanup())
-        background_tasks.add_task(file_session_cache.activate_file_session())
 
     return {
         "message": "Dispatched",
@@ -70,37 +69,48 @@ async def dispatch_all(
     }
 
 
-import datetime
+# @lru_cache(maxsize=0)
+# @sync_router.on_event("startup")
+# @repeat_every(seconds=5)
+# async def remove_false_folders():
+#     with contextlib.suppress(TypeError):
+#         directory = os.listdir(
+#             str(pathlib.Path(__file__).parent.absolute() / "FILE_PLAYING_FIELD")
+#         )
+#         # print(directory)
+#         if len(directory) != 0:
+#             # async_scheduler.add_job(
+#             #     , "interval", seconds=5
+#             # )
+#             # async_scheduler.start()
+#             await FileCacheEntry.check_and_delete_files()
+#         print("cleanup not active")
+#         # async_scheduler.remove_all_jobs()
 
 
-@sync_router.on_event("startup")
-@repeat_every(seconds=60 * 60)
-def remove_false_folders():
-    print(f"clean up at {datetime.datetime.time()}")
-    try:
-        FileCacheEntry.check_and_delete_files()
-    except Exception as e:
-        raise e
-
-
+@lru_cache
 @sync_router.get("/fetch/redis/all")
 async def redis_cache_all(user: User = Depends(get_current_user)):
     # get all redis cache pertaining to the user
-    all_files = RedisController(str(user.id)).get_files()
-    # extract the json from all_files
-    all_files = json.loads(all_files)
-
+    try:
+        all_files = RedisController(str(user.id)).get_files()
+        # extract the json from all_files
+        all_files = json.loads(all_files)
+    except TypeError as e:
+        print("cache empty")
     return {
         "files": all_files,
     }
 
 
+@lru_cache
 @sync_router.get("/file/cache/all")
 async def file_cache_all(user: User = Depends(get_current_user)):
     # delete all files
     ...
 
 
+@lru_cache
 @sync_router.post("/fetch/delete/all")
 def delete_all(user: User = Depends(get_current_user), db=Depends(get_db)):
     db.query(DataStorage).delete()
@@ -108,11 +118,13 @@ def delete_all(user: User = Depends(get_current_user), db=Depends(get_db)):
     return {"message": "deleted"}
 
 
+@lru_cache
 @sync_router.get("/fetch/redis/clear")
 async def redis_cache_clear(user: User = Depends(get_current_user)):
     return RedisController(str(user.id)).clear_cache()
 
 
+@lru_cache
 @sync_router.get("/fetch/redis/test")
 async def redis_cache_test(user: User = Depends(get_current_user), db=Depends(get_db)):
     user_id = "user_1"
@@ -124,6 +136,7 @@ async def redis_cache_test(user: User = Depends(get_current_user), db=Depends(ge
     return {redis.serialize_user_files()}
 
 
+@lru_cache
 @sync_router.get("/all")
 def return_all(user: User = Depends(get_current_user), db=Depends(get_db)):
     user_data = (

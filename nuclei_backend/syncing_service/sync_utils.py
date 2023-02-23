@@ -1,18 +1,14 @@
 import contextlib
-from functools import total_ordering, lru_cache
+from functools import lru_cache
 import logging
 import shutil
 import subprocess
 import time
 
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 import os, pathlib
 
 from ..storage_service.ipfs_model import DataStorage
-from ..users.auth_utils import get_current_user
-from ..users.user_handler_utils import get_db
-from ..users.user_models import User
-from .sync_user_cache import FileListener, RedisController, SchedulerController
 from uuid import uuid4
 from pathlib import Path
 import json
@@ -41,7 +37,7 @@ class UserDataExtraction:
     def __init__(self, user_id, db, cids: list):
         self.user_id = user_id
         self.session_id = uuid4()
-        
+
         self.db = db
         self.user_data = get_user_cids(self.user_id, self.db)
         self.file_bytes = []
@@ -98,5 +94,5 @@ class UserDataExtraction:
 
             shutil.rmtree(
                 pathlib.Path(self.new_folder),
-                ignore_errors=False,
+                ignore_errors=True,
             )

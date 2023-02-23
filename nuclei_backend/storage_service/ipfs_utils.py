@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import datetime
+from functools import lru_cache
 import logging
 import os
 import os.path
@@ -22,10 +23,12 @@ from .ipfs_model import DataStorage
 from .ipfs_schema import IpfsCreate
 
 
+@lru_cache
 def ensure_dir(path: str) -> None:
     pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
 
+@lru_cache
 def save_temp_file(file, filename: str) -> str:
     unique_id = str(uuid4())
     _filename = f"filename{unique_id}{filename[-4:]}"
@@ -37,10 +40,12 @@ def save_temp_file(file, filename: str) -> str:
     return _file_path
 
 
+@lru_cache
 def remove(path):
     os.remove(path)
 
 
+@lru_cache
 def generate_hash(cid: LiteralString) -> str:
     path = str(Config.TEMP_FOLDER)
     unique_id = str(uuid4())
@@ -62,6 +67,7 @@ def generate_hash(cid: LiteralString) -> str:
     return _hash
 
 
+@lru_cache
 def produce_cid(file: bytes, filename: str) -> LiteralString:
     print(Config.TEMP_FOLDER)
     if not os.path.exists(Config.TEMP_FOLDER):
@@ -94,6 +100,7 @@ def produce_cid(file: bytes, filename: str) -> LiteralString:
     return cid
 
 
+@lru_cache
 def assemble_record(file: bytes, filename, cid: str, owner_id: int = None):
     return DataStorage(
         file_name=filename,

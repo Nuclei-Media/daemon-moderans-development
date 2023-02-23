@@ -8,6 +8,7 @@ from ..users.auth_utils import get_current_user
 from ..users.user_handler_utils import get_db, get_user
 
 
+@lru_cache
 @users_router.post("/register", response_model=user_handler_utils.user_schemas.User)
 def create_user(
     user: user_handler_utils.user_schemas.UserCreate,
@@ -21,6 +22,7 @@ def create_user(
     return status.HTTP_200_OK
 
 
+@lru_cache
 @users_router.post("/add_friend")
 async def add_friend(
     user: User = Depends(get_current_user),

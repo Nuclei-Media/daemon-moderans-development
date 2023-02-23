@@ -1,4 +1,5 @@
 from datetime import timedelta
+from functools import lru_cache
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -15,6 +16,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/token")
 from fastapi.param_functions import Form
 
 
+@lru_cache
 @users_router.post("/token")
 def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -40,6 +42,7 @@ def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+@lru_cache
 @users_router.get("/me")
 def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user

@@ -1,4 +1,5 @@
 import base64
+from functools import lru_cache
 
 import httpx
 from fastapi import Depends, File, HTTPException, UploadFile, status
@@ -13,7 +14,20 @@ from .image_compression_utils import CompressImage
 
 # https://stackoverflow.com/questions/70043665/fastapi-unvicorn-request-hanging-during-invocation-of-call-next-path-operation
 
+import re
 
+
+def urlify(s):
+    # Remove all non-word characters (everything except numbers and letters)
+    s = re.sub(r"[^\w\s]", "", s)
+
+    # Replace all runs of whitespace with a single dash
+    s = re.sub(r"\s+", "-", s)
+
+    return s
+
+
+@lru_cache
 @storage_service.post("/compress/image")
 async def compress_task_image(
     files: List[UploadFile],
@@ -24,7 +38,7 @@ async def compress_task_image(
     for file in files:
         _file = file.file
         _file = _file.read()
-        _filename = file.filename
+        _filename = file.filename.replace(" ", "_")
 
         if identity_token is None:
             return {"message": "Unauthorized user"}, status.HTTP_401_UNAUTHORIZED
