@@ -1,5 +1,5 @@
-import typing
+from typing import Literal
 
 
-class Config(object):
-    OS: typing.String["windows" | "linux"] = "windows"
+class _Config(object):
+    OS: Literal["windows", "linux"] = "windows"

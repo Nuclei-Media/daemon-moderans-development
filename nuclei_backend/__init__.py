@@ -85,13 +85,5 @@ class Nuclei(FastAPI):
         permanent_store_model.Base.metadata.create_all(bind=engine)
         # quota_models.Base.metadata.create_all(bind=engine)
 
-    def tests(self):
-        from .tests.test_users import UsersTests
-
-        # from .tests.upload_tests import UploadTests
-
-        UsersTests(self.client)
-        # UploadTests(self.client)
-
 
 app = Nuclei()

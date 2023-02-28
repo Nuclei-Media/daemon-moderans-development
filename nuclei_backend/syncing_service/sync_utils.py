@@ -33,7 +33,7 @@ def get_collective_bytes(user_id, db):
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
 
-from ..Config import OS
+from ..Config import _Config
 
 
 class UserDataExtraction:
@@ -45,19 +45,19 @@ class UserDataExtraction:
         self.user_data = get_user_cids(self.user_id, self.db)
         self.file_bytes = []
         self.cids = cids
-        if OS == "windows":
+        if _Config.OS == "windows":
             self.ipget_path = Path(__file__).parent / "utils\ipget.exe"
             self.new_folder = (
                 f"{Path(__file__).parent}\FILE_PLAYING_FIELD\{self.session_id}"
             )
-        if OS == "linux":
+        if _Config.OS == "linux":
             self.ipget_path = Path(__file__).parent / "utils/ipget"
             self.new_folder = (
                 f"{Path(__file__).parent}/FILE_PLAYING_FIELD/{self.session_id}"
             )
 
     def download_file_ipfs(self):
-        if OS == "windows":
+        if _Config.OS == "windows":
             with contextlib.suppress(PermissionError):
                 os.mkdir(self.new_folder)
                 os.chdir(self.new_folder)
@@ -74,7 +74,7 @@ class UserDataExtraction:
                         print(f"this is the error: {e}")
                         raise e
                 self.write_file_summary()
-        if OS == "linux":
+        if _Config.OS == "linux":
             with contextlib.suppress(PermissionError):
                 os.mkdir(self.new_folder)
                 os.chdir(self.new_folder)
@@ -93,7 +93,7 @@ class UserDataExtraction:
                 self.write_file_summary()
 
     def write_file_summary(self):
-        if OS == "windows":
+        if _Config.OS == "windows":
             with contextlib.suppress(PermissionError):
                 file_sum = {
                     _.file_name: {
@@ -105,7 +105,7 @@ class UserDataExtraction:
                 }
                 with open(f"{self.session_id}.internal.json", "w") as f:
                     json.dump(file_sum, f)
-        if OS == "linux":
+        if _Config.OS == "linux":
             with contextlib.suppress(PermissionError):
                 file_sum = {
                     _.file_name: {

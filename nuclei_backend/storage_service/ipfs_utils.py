@@ -22,7 +22,7 @@ from .config import Config
 from .ipfs_model import DataStorage
 from .ipfs_schema import IpfsCreate
 import asyncio
-from ...nuclei_backend.Config import OS
+from ..Config import _Config
 
 
 @lru_cache
@@ -32,7 +32,7 @@ def ensure_dir(path: str) -> None:
 
 @lru_cache
 def save_temp_file(file, filename: str) -> str:
-    if OS == "windows":
+    if _Config.OS == "windows":
         unique_id = str(uuid4())
         _filename = f"filename{unique_id}{filename[-4:]}"
         _file_path = os.path.join(Config.TEMP_FOLDER, _filename)
@@ -53,7 +53,7 @@ import time
 
 @lru_cache
 def generate_hash(cid: LiteralString) -> str:
-    if OS == "windows":
+    if _Config.OS == "windows":
         path = str(Config.TEMP_FOLDER)
         unique_id = str(uuid4())
         _bat_path = os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.bat")
@@ -65,7 +65,7 @@ def generate_hash(cid: LiteralString) -> str:
             f.write(rf"{Config.KUBO_PATH} ls -v {cid} > hash{unique_id}.txt")
         call(_bat_path)
 
-    if OS == "linux":
+    if _Config.OS == "linux":
         unique_id = str(uuid4())
         _bat_path = os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.sh")
         _buffer_path = os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.txt")
@@ -93,7 +93,7 @@ def generate_hash(cid: LiteralString) -> str:
 
 @lru_cache
 def produce_cid(file: bytes, filename: str) -> LiteralString:
-    if OS == "windows":
+    if _Config.OS == "windows":
         if not os.path.exists(Config.TEMP_FOLDER):
             ensure_dir(Config.TEMP_FOLDER)
         try:
@@ -117,7 +117,7 @@ def produce_cid(file: bytes, filename: str) -> LiteralString:
         with open(_buffer_path, "r") as f:
             cid = f.read().strip()
 
-    if OS == "linux":
+    if _Config.OS == "linux":
         if not os.path.exists(Config.TEMP_FOLDER):
             ensure_dir(Config.TEMP_FOLDER)
         try:

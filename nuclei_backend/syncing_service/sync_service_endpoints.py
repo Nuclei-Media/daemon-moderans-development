@@ -49,19 +49,16 @@ async def dispatch_all(
                 }
             else:
                 redis_controller.delete_file_count()
-        await file_session_cache.activate_file_session()
-        await files.download_file_ipfs()
-        print("1")
-        file_listener = FileListener(user.id, files.session_id)
-        print("2")
-        background_tasks.add_task(file_listener.file_listener())
-        print("3")
-        redis_controller.set_file_count(len(cids))
-        print("4")
-        await file_session_cache.deactivate_file_session()
-        print("5")
-        background_tasks.add_task(files.cleanup())
-
+        try:
+            await file_session_cache.activate_file_session()
+            await files.download_file_ipfs()
+            file_listener = FileListener(user.id, files.session_id)
+            background_tasks.add_task(file_listener.file_listener())
+            redis_controller.set_file_count(len(cids))
+            await file_session_cache.deactivate_file_session()
+            background_tasks.add_task(files.cleanup())
+        except Exception as e:
+            print(e)
     return {
         "message": "Dispatched",
         "cids": cids,
@@ -69,23 +66,10 @@ async def dispatch_all(
     }
 
 
-# @lru_cache(maxsize=0)
-# @sync_router.on_event("startup")
-# @repeat_every(seconds=5)
-# async def remove_false_folders():
-#     with contextlib.suppress(TypeError):
-#         directory = os.listdir(
-#             str(pathlib.Path(__file__).parent.absolute() / "FILE_PLAYING_FIELD")
-#         )
-#         # print(directory)
-#         if len(directory) != 0:
-#             # async_scheduler.add_job(
-#             #     , "interval", seconds=5
-#             # )
-#             # async_scheduler.start()
-#             await FileCacheEntry.check_and_delete_files()
-#         print("cleanup not active")
-#         # async_scheduler.remove_all_jobs()
+"""
+add a job market component in the component level
+employ the functions to a job. write a job center for each component. 
+"""
 
 
 @lru_cache
