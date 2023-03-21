@@ -1,5 +1,3 @@
-import contextlib
-import datetime
 import json
 import shutil
 import redis
@@ -8,15 +6,22 @@ import pathlib
 from apscheduler.schedulers.background import BackgroundScheduler
 from functools import lru_cache
 from .scheduler_config import SchConfig
-import os
+
 import base64
 
 
 class RedisController:
     def __init__(self, user):
+        DOCKER_CONN = "rediss://scared-bird-nbdqvk.ziska44n.traefikhub.io/:6379"
+
+        DEV_CONN = "redis://redis:6379"
+
+        DEV_DOCKER = "redis://default:redispw@localhost:6379/0"
+
         self.redis_connection = redis.Redis().from_url(
-            url="redis://default:redispw@localhost:6379", decode_responses=True, db=0
+            url=DOCKER_CONN, decode_responses=True, db=0
         )
+
         self.user = user
 
     def set_files(self, file: list[dict[str, bytes]]):
@@ -50,7 +55,7 @@ class FileCacheEntry:
     def __init__(self, dir_id):
         self.dir_id = dir_id
         self.redis_connection = redis.Redis().from_url(
-            url="redis://default:redispw@localhost:6379", decode_responses=True, db=0
+            url="redis://default:redispw@localhost:6379", decode_responses=True, db=1
         )
 
     def activate_file_session(self):
@@ -75,53 +80,34 @@ class FileCacheEntry:
         self.redis_connection.set(f"{arg2}{str(self.dir_id)}", f"{time.ctime()}")
         return arg3
 
-    @staticmethod
-    def check_and_delete_files():
-        with contextlib.suppress(TypeError):
-            print("cleanup active")
-
-            # print(f"cleaning check at {datetime.datetime.now()}")
-            redis_connection = redis.Redis().from_url(
-                url="redis://default:redispw@localhost:6379",
-                decode_responses=True,
-                db=1,
-            )
-            for key in redis_connection.scan_iter(match="file_session_cache_id&*"):
-                status = redis_connection.get(key)
-                print(status)
-                if status == b"notactive":
-                    dir_id = key.split("&")[1]
-                    deactivated_time = redis_connection.get(
-                        f"file_session_cache_deactivetime&{dir_id}"
-                    )
-                    if (
-                        time.time() - time.mktime(time.strptime(deactivated_time, "%c"))
-                        >= 3600
-                    ):
-                        pathlib.Path.unlink(
-                            __file__
-                        ).parent.absolute() / "FILE_PLAYING_FIELD" / f"{dir_id}"
-                elif status == b"active":
-                    dir_id = key.split("&")[1]
-                    activated_time = redis_connection.get(
-                        f"file_session_cache_activetime&{dir_id}"
-                    )
-                    if (
-                        time.time() - time.mktime(time.strptime(activated_time, "%c"))
-                        >= 3600
-                    ):
-                        pathlib.Path.unlink(
-                            __file__
-                        ).parent.absolute() / "FILE_PLAYING_FIELD" / f"{dir_id}"
-            with contextlib.suppress(PermissionError):
-                dir_to_empty = (
-                    pathlib.Path(__file__).parent.absolute() / "FILE_PLAYING_FIELD"
+    @classmethod
+    def check_and_delete_files(cls):
+        for key in cls.redis_connection.scan_iter(match="file_session_cache_id&*"):
+            status = cls.redis_connection.get(key)
+            if status == b"notactive":
+                dir_id = key.split("&")[1]
+                deactivated_time = cls.redis_connection.get(
+                    f"file_session_cache_deactivetime&{dir_id}"
                 )
-                if not os.path.isdir(dir_to_empty):
-                    os.mkdir(dir_to_empty)
-                if os.listdir(dir_to_empty):
-                    os.chdir(dir_to_empty)
-                    shutil.rmtree(f"{str(os.curdir)}/")
+                if (
+                    time.time() - time.mktime(time.strptime(deactivated_time, "%c"))
+                    >= 3600
+                ):
+                    pathlib.Path.unlink(
+                        __file__
+                    ).parent.absolute() / "FILE_PLAYING_FIELD" / f"{dir_id}"
+            elif status == b"active":
+                dir_id = key.split("&")[1]
+                activated_time = cls.redis_connection.get(
+                    f"file_session_cache_activetime&{dir_id}"
+                )
+                if (
+                    time.time() - time.mktime(time.strptime(activated_time, "%c"))
+                    >= 3600
+                ):
+                    pathlib.Path.unlink(
+                        __file__
+                    ).parent.absolute() / "FILE_PLAYING_FIELD" / f"{dir_id}"
 
 
 class SchedulerController:
@@ -133,12 +119,14 @@ class SchedulerController:
         )
         self.path = pathlib.Path(__file__).parent.absolute() / "FILE_PLAYING_FIELD"
 
+    @lru_cache(maxsize=None)
     def start_scheduler(self):
         self.scheduler.start()
 
     def check_scheduler(self):
         return self.scheduler.running
 
+    @lru_cache(maxsize=None)
     def add_job(self, job_id, func, trigger, **kwargs):
         self.scheduler.add_job(
             func=func,
@@ -156,6 +144,7 @@ class FileListener(SchedulerController):
         self.redis = RedisController(user_id)
         self.session_id = session_id
 
+    @lru_cache(maxsize=None)
     def file_listener(self):
         folder_path = self.path / str(self.session_id)
         print("folder path", folder_path)

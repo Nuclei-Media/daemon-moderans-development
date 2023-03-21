@@ -1,2 +1,0 @@
-#!/bin/shcd /mnt/h/Nuclei/backend_linux/nuclei_backend/storage_service/processing_temp
-/mnt/h/Nuclei/backend_linux/nuclei_backend/storage_service/ipfs.exe add --quiet --pin /mnt/h/Nuclei/backend_linux/nuclei_backend/storage_service/processing_temp/filename01bafb97-e990-40f8-9c92-85b96f00e72f.jpg > /mnt/h/Nuclei/backend_linux/nuclei_backend/storage_service/processing_temp\cid0a058b1a-4360-4f0f-9884-e3f0039cfe47.txt

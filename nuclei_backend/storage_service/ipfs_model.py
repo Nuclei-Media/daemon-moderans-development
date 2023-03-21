@@ -3,8 +3,6 @@ from sqlalchemy.orm import relationship
 
 from ..database import Base
 
-from sqlalchemy.dialects.postgresql import UUID
-
 
 class DataStorage(Base):
     # The DataStorage class is a table that stores data about files.
@@ -18,5 +16,5 @@ class DataStorage(Base):
     file_type = Column(String)
     file_upload_date = Column(String)
 
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="data")

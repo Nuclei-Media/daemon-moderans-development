@@ -17,28 +17,28 @@ services:
 
   ipfs:
     image: ipfs/go-ipfs:latest
-    command: 
-      - daemon 
-      - --migrate=true 
+    command:
+      - daemon
+      - --migrate=true
       - --mount
       - --routing=dhtclient
       - --enable-namesys-pubsub
-    privileged: true    # not needed in theory, adding this makes no difference though
+    privileged: true
     cap_add:
-        - SYS_ADMIN
+      - SYS_ADMIN
     security_opt:
-        - apparmor:unconfined
+      - apparmor:unconfined
     devices:
-        - /dev/fuse:/dev/fuse
+      - /dev/fuse:/dev/fuse
     environment:
       - IPFS_PROFILE=server
       - IPFS_PATH=/ipfsdata
     ports:
-        - 8080:8080   # public gateway
-        - 4001:4001   # public swarm UDP
-        - 5001:5001   # private API
+      - 8080:8080
+      - 4001:4001
+      - 5001:5001
     volumes:
-        - ./data/ipfs:/ipfsdata
-        - /etc/fuse.conf:/etc/fuse.conf:ro
-        - ./data/ipfs:/data/ipfs
-        - ./data/export:/export      
+      - ./data/ipfs:/ipfsdata
+      - /etc/fuse.conf:/etc/fuse.conf:ro
+      - ./data/ipfs:/data/ipfs
+      - ./data/export:/export

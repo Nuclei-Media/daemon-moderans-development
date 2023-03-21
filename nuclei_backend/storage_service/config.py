@@ -1,14 +1,9 @@
 import pathlib
-from importlib.resources import path
-from typing import Literal
+from typing import Final
 import struct
-from ..Config import _Config
 
 
+# It's a class that defines a bunch of constants
 class Config(struct.Struct):
-    if _Config.OS == "linux":
-        TEMP_FOLDER: Literal = pathlib.Path(__file__).parent / "processing_temp"
-        KUBO_PATH: Literal = pathlib.Path(__file__).parent / "linux_ipfs"
-    elif _Config.OS == "windows":
-        TEMP_FOLDER: Literal = pathlib.Path(__file__).parent.joinpath("processing_temp")
-        KUBO_PATH: Literal = pathlib.Path(__file__).parent / "windows_ipfs.exe"
+    TEMP_FOLDER: Final = pathlib.Path(__file__).parent / "processing_temp"
+    KUBO_PATH: Final = pathlib.Path(__file__).parent / "ipfs"

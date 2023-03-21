@@ -1,5 +1,21 @@
-# Nuclei
+# Nuclei - development
 
-built using Fastapi and flutter and respective extensions. 
+## Only used for development of core species.
 
-Nuclei is a web application that allows you to upload and manage your own compressed media to increase media availability and accessibility.
+## how to run
+
+The devependencies setup: make sure to have docker-desktop and ipfs-desktop installed
+
+```
+git clone https://github.com/Nuclei-Media/daemon-moderans-development
+cd daemon-moderans-development
+docker-compose up
+```
+
+Primary platform setup:
+
+```
+cd daemon-moderans-development
+python -m pip install -r requirements.txt
+python -m main.py
+```

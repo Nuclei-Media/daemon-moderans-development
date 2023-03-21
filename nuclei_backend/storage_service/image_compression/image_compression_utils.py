@@ -3,7 +3,6 @@ import pathlib
 import subprocess
 from typing import Final
 from uuid import uuid4
-from functools import lru_cache
 
 import PIL.Image
 from fastapi import File
@@ -15,17 +14,16 @@ logger = logging.getLogger(__name__)
 
 class CompressImage(CompressionImpl):
     def __init__(self, file: bytes, filename: str):
+
         super().__init__(app_path="image")
 
         self.file = file
         self.filename = filename
         self.compression_temp_file = self.save_to_temp(self.file, self.filename)
 
-    @lru_cache
     def cleanup_compression_outcome(self):
         pathlib.Path(self.compression_temp_file[0]).unlink()
 
-    @lru_cache
     def produce_compression(self) -> bytes:
         print("compressing image")
         image = PIL.Image.open(self.compression_temp_file[0], "r")

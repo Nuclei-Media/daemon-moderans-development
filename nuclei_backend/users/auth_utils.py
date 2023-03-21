@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from functools import lru_cache
 
 from typing import Dict, Final, Literal, Union
 
@@ -60,7 +59,7 @@ def authenticate_user(
     return False
 
 
-def get_current_user(
+async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: user_handler_utils.Session = Depends(user_handler_utils.get_db),
 ):

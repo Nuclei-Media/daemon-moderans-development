@@ -1,4 +1,3 @@
-from functools import lru_cache
 import pathlib
 from typing import Literal
 from uuid import uuid4
@@ -8,6 +7,7 @@ from .ipfs_utils import assemble_record, produce_cid
 
 class CompressionImpl:
     def __init__(self, app_path: Literal["video", "image", "misc"]):
+
         print("app path ", app_path)
         self.app_path = app_path
         self.path_variation = {
@@ -25,7 +25,6 @@ class CompressionImpl:
             ),
         }
 
-    @lru_cache
     def save_to_temp(self, file_bytes: bytes, filename) -> tuple:
         temp_dir = self.path_variation[self.app_path]
         temp_dir.mkdir(exist_ok=True)
@@ -36,11 +35,10 @@ class CompressionImpl:
         temp_file.write_bytes(file_bytes)
         return (temp_file, temp_file_identity)
 
-    @lru_cache
     def cleanup_file(self, temp_file: str) -> None:
+
         pathlib.Path(temp_file).unlink()
 
-    @lru_cache
     def temp_compression_save(self, file_path: str) -> str:
         temp_file_index = file_path.find("temp_file")
 
@@ -48,10 +46,10 @@ class CompressionImpl:
 
         file_uuid: str = file_path[temp_file_index:][9:-4]
 
-        return f"{parsed_file_path}\compressed_temp{file_uuid}"
+        return f"{parsed_file_path}/compressed_temp{file_uuid}"
 
-    @lru_cache
     def commit_to_ipfs(self, file, filename: str, user, db) -> str:
+
         cid: str = produce_cid(file, filename)
         data_record = assemble_record(file, filename, cid, user.id)
         db.add(data_record)

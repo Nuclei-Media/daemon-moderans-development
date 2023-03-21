@@ -61,7 +61,7 @@ async def upload(
         db.commit()
 
     except sqlalchemy.exc.IntegrityError as e:
-        return {"message": "File already exists", "file_hash": _hash}
+        return {"message": "File already exists", "file_hash": hash}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
