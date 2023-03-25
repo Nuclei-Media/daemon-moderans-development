@@ -1,0 +1,58 @@
+version: '3.7'
+
+volumes:
+  data:
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=postgrespw
+    ports:
+      - 5432:5432
+    volumes:
+      - type: volume
+        source: data
+        target: /var/lib/postgresql/data
+
+  redis-server:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
+  ipfs:
+    image: ipfs/go-ipfs:latest
+    command:
+      - daemon
+      - --migrate=true
+      - --mount
+      - --routing=dhtclient
+      - --enable-namesys-pubsub
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    devices:
+      - /dev/fuse:/dev/fuse
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/ipfsdata
+    ports:
+      - 8080:8080
+      - 4001:4001
+      - 5001:5001
+    volumes:
+      - type: bind
+        source: ./data/ipfs
+        target: /ipfsdata
+      - type: bind
+        source: /etc/fuse.conf
+        target: /etc/fuse.conf
+        read_only: true
+      - type: bind
+        source: ./data/ipfs
+        target: /data/ipfs
+      - type: bind
+        source: ./data/export
+        target: /export
