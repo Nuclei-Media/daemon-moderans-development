@@ -53,7 +53,7 @@ import time
 
 @lru_cache
 def generate_hash(cid: LiteralString) -> str:
-    if OsConfig.OSOS == "windows":
+    if OsConfig.OS == "windows":
         path = str(Config.TEMP_FOLDER)
         unique_id = str(uuid4())
         _bat_path = os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.bat")
@@ -65,7 +65,7 @@ def generate_hash(cid: LiteralString) -> str:
             f.write(rf"{Config.KUBO_PATH} ls -v {cid} > hash{unique_id}.txt")
         call(_bat_path)
 
-    if OsConfig.OSOS == "linux":
+    if OsConfig.OS == "linux":
         unique_id = str(uuid4())
         _bat_path = os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.sh")
         _buffer_path = os.path.join(Config.TEMP_FOLDER, f"hash{unique_id}.txt")

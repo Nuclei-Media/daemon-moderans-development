@@ -55,6 +55,7 @@ class UserDataExtraction:
             self.new_folder = (
                 f"{Path(__file__).parent}/FILE_PLAYING_FIELD/{self.session_id}"
             )
+        print(f"ipget path{self.ipget_path}")
 
     def download_file_ipfs(self):
         if OsConfig.OS == "windows":
@@ -74,6 +75,7 @@ class UserDataExtraction:
                         print(f"this is the error: {e}")
                         raise e
                 self.write_file_summary()
+
         if OsConfig.OS == "linux":
             with contextlib.suppress(PermissionError):
                 os.mkdir(self.new_folder)

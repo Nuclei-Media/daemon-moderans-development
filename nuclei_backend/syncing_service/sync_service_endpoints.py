@@ -30,37 +30,37 @@ async def dispatch_all(
     user: User = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    with contextlib.suppress(PermissionError, TypeError):
-        cids = get_user_cids(user.id, db)
-        queried_bytes = get_collective_bytes(user.id, db)
-        files = UserDataExtraction(user.id, db, cids)
-        file_session_cache = FileCacheEntry(files.session_id)
-        redis_controller = RedisController(user=str(user.id))
+    # with contextlib.suppress(PermissionError, TypeError):
+    cids = get_user_cids(user.id, db)
+    queried_bytes = get_collective_bytes(user.id, db)
+    files = UserDataExtraction(user.id, db, cids)
+    file_session_cache = FileCacheEntry(files.session_id)
+    redis_controller = RedisController(user=str(user.id))
 
-        if len(cids) == 0:
-            return {"message": "please upload files before fetching"}
-        if redis_controller.check_files():
-            cached_file_count = redis_controller.get_file_count()
-            if cached_file_count == len(cids):
-                return {
-                    "message": "Files are already in cache",
-                    "cids": cids,
-                    "bytes": queried_bytes,
-                }
-            else:
-                redis_controller.delete_file_count()
-        await file_session_cache.activate_file_session()
-        await files.download_file_ipfs()
-        print("1")
-        file_listener = FileListener(user.id, files.session_id)
-        print("2")
-        background_tasks.add_task(file_listener.file_listener())
-        print("3")
-        redis_controller.set_file_count(len(cids))
-        print("4")
-        await file_session_cache.deactivate_file_session()
-        print("5")
-        background_tasks.add_task(files.cleanup())
+    if len(cids) == 0:
+        return {"message": "please upload files before fetching"}
+    if redis_controller.check_files():
+        cached_file_count = redis_controller.get_file_count()
+        if cached_file_count == len(cids):
+            return {
+                "message": "Files are already in cache",
+                "cids": cids,
+                "bytes": queried_bytes,
+            }
+        else:
+            redis_controller.delete_file_count()
+    file_session_cache.activate_file_session()
+    files.download_file_ipfs()
+    print("1")
+    file_listener = FileListener(user.id, files.session_id)
+    print("2")
+    background_tasks.add_task(file_listener.file_listener())
+    print("3")
+    redis_controller.set_file_count(len(cids))
+    print("4")
+    file_session_cache.deactivate_file_session()
+    print("5")
+    background_tasks.add_task(files.cleanup())
 
     return {
         "message": "Dispatched",

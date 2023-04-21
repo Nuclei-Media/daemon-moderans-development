@@ -21,9 +21,9 @@ class User(Base):
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
 
-    permanent_store = relationship("PermanentStore", back_populates="user_relationship")
+    # permanent_store = relationship("PermanentStore", back_populates="user_relationship")
 
     data = relationship("DataStorage", back_populates="owner")
-    chat_rooms_owned = relationship("ChatRoom", back_populates="owner")
-    sent_messages = relationship("ChatMessage", back_populates="sender")
-    chat_rooms_joined = relationship("ChatRoomMembership", back_populates="user")
+    # chat_rooms_owned = relationship("ChatRoom", back_populates="owner")
+    # sent_messages = relationship("ChatMessage", back_populates="sender")
+    # chat_rooms_joined = relationship("ChatRoomMembership", back_populates="user")
