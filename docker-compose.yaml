@@ -9,36 +9,26 @@ services:
       - 5432:5432
     volumes:
       - data:/var/lib/postgresql
-
+  nuclei_backend:
+    # image: ronnytec/nuclei:latest
+    build:
+      context: .
+      dockerfile: backend.dockerfile
+    ports:
+        - 8000:8000
+    user: root
+    privileged: true
   redis-server:
     image: redis:latest
     ports:
       - 6379:6379
-
   ipfs:
-    image: ipfs/go-ipfs:latest
-    command:
-      - daemon
-      - --migrate=true
-      - --mount
-      - --routing=dhtclient
-      - --enable-namesys-pubsub
-    privileged: true
-    cap_add:
-      - SYS_ADMIN
-    security_opt:
-      - apparmor:unconfined
-    devices:
-      - /dev/fuse:/dev/fuse
-    environment:
-      - IPFS_PROFILE=server
-      - IPFS_PATH=/ipfsdata
+    image: ipfs/kubo:latest
+    restart: unless-stopped
     ports:
-      - 8080:8080
-      - 4001:4001
-      - 5001:5001
-    volumes:
-      - ./data/ipfs:/ipfsdata
-      - /etc/fuse.conf:/etc/fuse.conf:ro
-      - ./data/ipfs:/data/ipfs
-      - ./data/export:/export
+      - 4001:4001/tcp
+      - 4001:4001/udp
+      - 127.0.0.1:5001:5001
+      - 127.0.0.1:5003:5003
+
+      - 127.0.0.1:8080:8080

@@ -1,18 +1,14 @@
 import contextlib
-from functools import total_ordering, lru_cache
+from functools import lru_cache
 import logging
 import shutil
 import subprocess
 import time
 
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 import os, pathlib
 
 from ..storage_service.ipfs_model import DataStorage
-from ..users.auth_utils import get_current_user
-from ..users.user_handler_utils import get_db
-from ..users.user_models import User
-from .sync_user_cache import FileListener, RedisController, SchedulerController
 from uuid import uuid4
 from pathlib import Path
 import json
@@ -37,6 +33,9 @@ def get_collective_bytes(user_id, db):
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
 
+from ..Config import OsConfig
+
+
 class UserDataExtraction:
     def __init__(self, user_id, db, cids: list):
         self.user_id = user_id
@@ -46,41 +45,78 @@ class UserDataExtraction:
         self.user_data = get_user_cids(self.user_id, self.db)
         self.file_bytes = []
         self.cids = cids
-        self.ipget_path = Path(__file__).parent / "utils/ipget"
-        self.new_folder = (
-            f"{Path(__file__).parent}/FILE_PLAYING_FIELD/{self.session_id}"
-        )
+        if OsConfig.OS == "windows":
+            self.ipget_path = Path(__file__).parent / "utils\ipget.exe"
+            self.new_folder = (
+                f"{Path(__file__).parent}\FILE_PLAYING_FIELD\{self.session_id}"
+            )
+        if OsConfig.OS == "linux":
+            self.ipget_path = Path(__file__).parent / "utils/ipget"
+            self.new_folder = (
+                f"{Path(__file__).parent}/FILE_PLAYING_FIELD/{self.session_id}"
+            )
 
     def download_file_ipfs(self):
-        with contextlib.suppress(PermissionError):
-            os.mkdir(self.new_folder)
-            os.chdir(self.new_folder)
-            for _ in self.cids:
-                try:
-                    file = f"{self.ipget_path} --node=local {_.file_cid} -o {_.file_name} --progress=true"
+        if OsConfig.OS == "windows":
+            with contextlib.suppress(PermissionError):
+                os.mkdir(self.new_folder)
+                os.chdir(self.new_folder)
+                for _ in self.cids:
+                    try:
+                        file = f"{self.ipget_path} --node=local {_.file_cid} -o {_.file_name} --progress=true"
 
-                    os.system(str(f"{file}"))
-                    print(
-                        f"Downloading {_.file_name} - {_.file_cid} - {self.session_id}"
-                    )
-                    time.sleep(5)
-                except Exception as e:
-                    print(f"this is the error: {e}")
-                    raise e
-            self.write_file_summary()
+                        subprocess.Popen(str(f"{file}"))
+                        print(
+                            f"Downloading {_.file_name} - {_.file_cid} - {self.session_id}"
+                        )
+                        time.sleep(5)
+                    except Exception as e:
+                        print(f"this is the error: {e}")
+                        raise e
+                self.write_file_summary()
+        if OsConfig.OS == "linux":
+            with contextlib.suppress(PermissionError):
+                os.mkdir(self.new_folder)
+                os.chdir(self.new_folder)
+                for _ in self.cids:
+                    try:
+                        file = f"{self.ipget_path} --node=local {_.file_cid} -o {_.file_name} --progress=true"
+
+                        os.system(str(f"{file}"))
+                        print(
+                            f"Downloading {_.file_name} - {_.file_cid} - {self.session_id}"
+                        )
+                        time.sleep(5)
+                    except Exception as e:
+                        print(f"this is the error: {e}")
+                        raise e
+                self.write_file_summary()
 
     def write_file_summary(self):
-        with contextlib.suppress(PermissionError):
-            file_sum = {
-                _.file_name: {
-                    "file_name": _.file_name,
-                    "file_cid": _.file_cid,
-                    "file_size": _.file_size,
+        if OsConfig.OS == "windows":
+            with contextlib.suppress(PermissionError):
+                file_sum = {
+                    _.file_name: {
+                        "file_name": _.file_name,
+                        "file_cid": _.file_cid,
+                        "file_size": _.file_size,
+                    }
+                    for _ in self.cids
                 }
-                for _ in self.cids
-            }
-            with open(f"{self.session_id}.internal.json", "w") as f:
-                json.dump(file_sum, f)
+                with open(f"{self.session_id}.internal.json", "w") as f:
+                    json.dump(file_sum, f)
+        if OsConfig.OS == "linux":
+            with contextlib.suppress(PermissionError):
+                file_sum = {
+                    _.file_name: {
+                        "file_name": _.file_name,
+                        "file_cid": _.file_cid,
+                        "file_size": _.file_size,
+                    }
+                    for _ in self.cids
+                }
+                with open(f"{self.session_id}.internal.json", "w") as f:
+                    json.dump(file_sum, f)
 
     def insurance(self) -> bool:
         for _ in self.cids:
@@ -92,11 +128,11 @@ class UserDataExtraction:
             del _bytes
         return True
 
-    async def cleanup(self):
+    def cleanup(self):
         with contextlib.suppress(PermissionError):
             os.chdir(pathlib.Path(self.new_folder).parent)
 
             shutil.rmtree(
                 pathlib.Path(self.new_folder),
-                ignore_errors=False,
+                ignore_errors=True,
             )
