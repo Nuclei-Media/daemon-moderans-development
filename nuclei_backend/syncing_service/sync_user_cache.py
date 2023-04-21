@@ -15,7 +15,7 @@ import base64
 class RedisController:
     def __init__(self, user):
         self.redis_connection = redis.Redis().from_url(
-            url="redis://redis:6379", decode_responses=True, db=0
+            url="redis://localhost:6379", decode_responses=True
         )
         self.user = user
 
@@ -50,7 +50,7 @@ class FileCacheEntry:
     def __init__(self, dir_id):
         self.dir_id = dir_id
         self.redis_connection = redis.Redis().from_url(
-            url="redis://redis:6379", decode_responses=True, db=0
+            url="redis://localhost:6379", decode_responses=True
         )
 
     def activate_file_session(self):
