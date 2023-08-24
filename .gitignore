@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+/data
 # C extensions
 *.so
 *.pyc
@@ -35,7 +35,7 @@ __pycache__/
 *.lz4
 
 /ipfs
-/data
+
 # Distribution / packaging
 pip-wheel-metadata/
 share/python-wheels/
@@ -56,7 +56,6 @@ node_modules
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
-nuclei_backend/syncing_service/FILE_PLAYING_FIELD/
 # Unit test / coverage reports
 htmlcov/
 .tox/

@@ -1,19 +1,16 @@
 from email.utils import parseaddr
 
-import passlib
 from fastapi import HTTPException
 from passlib.context import CryptContext
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing_extensions import Literal
-import uuid
+
 from ..database import SessionLocal
 from . import user_models, user_schemas
 
 password_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
-def get_user(db: Session, user_id: str):
+def get_user(db: Session, user_id: int):
     return db.query(user_models.User).filter(user_models.User.id == user_id).first()
 
 
