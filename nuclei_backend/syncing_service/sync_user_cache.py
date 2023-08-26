@@ -11,7 +11,7 @@ class RedisController:
     def __init__(self, user):
         "redis://127.0.0.1:6379"
         self.redis_connection = redis.Redis().from_url(
-            url="170.64.180.130", decode_responses=True, db=0
+            url="redis://170.64.180.130:6379", decode_responses=True, db=0
         )
         self.user = user
 
@@ -41,7 +41,7 @@ class RedisController:
         return self.redis_connection.delete(f"{self.user}_count")
 
     def close(self):
-        return self.redis_connection.quit()
+        return self.redis_connection.close()
 
 
 class FileCacheEntry:
@@ -51,7 +51,7 @@ class FileCacheEntry:
         """Create a new file cache entry for the specified directory."""
         self.dir_id = dir_id
         self.redis_connection = redis.Redis().from_url(
-            url="170.64.180.130", decode_responses=True, db=1
+            url="redis://170.64.180.130:6379", decode_responses=True, db=1
         )
 
     def activate_file_session(self):
@@ -124,7 +124,7 @@ class FileListener(RedisController):
 
     def store_data_with_checksum(self, data_dict):
         data_key = f"data_key:{self.user_id}"
-        self.redis.set(data_key, json.dumps(data_dict))
+        self.redis.redis_connection.set(data_key, json.dumps(data_dict))
 
     def file_listener(self):
         time.sleep(2)

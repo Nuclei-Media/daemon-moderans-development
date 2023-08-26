@@ -79,7 +79,7 @@ class UserDataExtraction:
             )
         )
         self.ipfs_path = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "utils/ipfs")
+            os.path.join(os.path.dirname(__file__), "utils/ipfs.exe")
         )
 
     def download_file_ipfs(self):

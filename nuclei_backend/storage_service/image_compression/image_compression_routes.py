@@ -18,7 +18,6 @@ def process_file(
 
         print("files compressed")
         compressed_file = compressing_file.produce_compression()
-        print(compressed_file)
         if ipfs_flag:
             print("before ipfs flag")
             try:

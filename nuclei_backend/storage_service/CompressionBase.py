@@ -1,7 +1,7 @@
 import pathlib
 from typing import Literal
 from uuid import uuid4
-
+from sqlalchemy import events, event
 from .ipfs_utils import assemble_record, produce_cid
 
 
@@ -56,3 +56,4 @@ class CompressionImpl:
         data_record = assemble_record(file, filename, cid, user.id)
         db.add(data_record)
         db.commit()
+        db.flush()

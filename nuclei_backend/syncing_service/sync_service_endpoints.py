@@ -76,26 +76,20 @@ async def dispatch_all(
         return {"error": e}
 
 
-# write a singular endpoint to point traffic
-# to either the redis cache fetcher or to the file fetcher endpoint
+# @sync_router.on_event("startup")
+# @repeat_every(seconds=60 * 60 * 2)
+# async def clear_redis_schedular():
+#     try:
+#         redis_instance = RedisController(user.id)
 
+#         redis_instance.clear_cache()
 
-@sync_router.on_event("startup")
-@repeat_every(seconds=60 * 60 * 2)
-async def clear_redis_schedular():
-    try:
-        user: User = get_current_user()
-        logging.info(
-            f"deleting {user.username}'s redis cache at: {str(datetime.datetime.now())}"
-        )
-        redis_instance = RedisController(user.id)
-        redis_instance.clear_cache()
-    except Exception as e:
-        logging.error(
-            f"there was an error in the clear_redis_schedular \
-                saying {e} \
-            at: {str(datetime.datetime.now())}"
-        )
+#     except Exception as e:
+#         logging.error(
+#             f"there was an error in the clear_redis_schedular \
+#                 saying {e} \
+#             at: {str(datetime.datetime.now())}"
+#         )
 
 
 @sync_router.get("/fetch")
