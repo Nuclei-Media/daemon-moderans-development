@@ -55,15 +55,6 @@ def get_collective_bytes(user_id, db):
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
 
-class ProgressWebsocket:
-    def __ini__(self, user_id, client_key):
-        self.user_id = user_id
-        self.client_key = client_key
-
-    def connect(self):
-        ...
-
-
 class UserDataExtraction:
     def __init__(self, user_id, db, cids: list):
         self.user_id = user_id
