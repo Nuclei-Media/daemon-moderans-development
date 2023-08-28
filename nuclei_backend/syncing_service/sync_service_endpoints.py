@@ -2,6 +2,7 @@ import hashlib
 import json
 import time
 import typing
+import asyncio
 from fastapi_utils.tasks import repeat_every
 from fastapi import Depends
 from fastapi import BackgroundTasks, status
@@ -56,14 +57,13 @@ def process_file(user, db) -> None:
         print(e)
 
 
-def process_files(user, db):
+async def process_files(user, db):
+    loop = asyncio.get_event_loop()
     with ThreadPoolExecutor(max_workers=8) as executor:
-        futures = []
-        future = executor.submit(process_file, user, db)
-        futures.append(future)
+        future = loop.run_in_executor(executor, process_file, user, db)
+        result = await future
 
-        results = [future.result() for future in futures]
-    return results
+    return result
 
 
 @sync_router.get("/fetch/all")

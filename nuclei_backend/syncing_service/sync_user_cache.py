@@ -81,18 +81,16 @@ class FileCleanerSchedule:
             keys for keys in self.redis_connection.scan_iter("processing:*")
         ]
 
-        self.expired_sessions = {}
-
     def get_expired_sessions(self):
         "returns an array of expired keys"
         for sessions in self.all_sessions:
             if not self.is_expired(self.redis_connection.get(sessions)):
                 self.all_sessions.remove(sessions)
-        return self.expired_sessions
+        return self.all_sessions
 
-    def is_expired(self, time):
+    def is_expired(self, _time):
         "calculates the time_delta fed"
-        if time > time.time():
+        if float(_time) < time.time():
             return True
         else:
             return False
@@ -100,11 +98,16 @@ class FileCleanerSchedule:
     def clean_expired_folders(self):
         "checks and deletes expired folders, assumption is the folder is already expired"
         for sessions in self.get_expired_sessions():
-            dir_name = str(sessions.key()).split(":")[1]
+            dir_name = str(sessions).split(":")[1]
 
-            pathlib.Path.unlink(
-                __file__
-            ).parent.absolute() / "FILE_PLAYING_FIELD" / f"{dir_name}"
+            dir_path = (
+                pathlib.Path(__file__).parent.absolute()
+                / "FILE_PLAYING_FIELD"
+                / dir_name
+            )
+            if dir_path.is_dir():
+                dir_path.rmdir()
+            self.redis_connection.delete(sessions)
 
 
 class FileListener(RedisController):
