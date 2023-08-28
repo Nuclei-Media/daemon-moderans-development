@@ -21,9 +21,10 @@ def process_file(
         if ipfs_flag:
             print("before ipfs flag")
             try:
-                compressing_file.commit_to_ipfs(
-                    compressed_file, filename, identity_token, db
-                )
+                with db as _db:
+                    compressing_file.commit_to_ipfs(
+                        compressed_file, filename, identity_token, _db
+                    )
             except Exception as e:
                 print(f"the error was {e}")
         compressing_file.cleanup_compression_outcome()

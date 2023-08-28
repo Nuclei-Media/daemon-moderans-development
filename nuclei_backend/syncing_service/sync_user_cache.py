@@ -9,9 +9,8 @@ import redis
 
 class RedisController:
     def __init__(self, user):
-        "redis://127.0.0.1:6379"
         self.redis_connection = redis.Redis().from_url(
-            url="redis://170.64.180.130:6379", decode_responses=True, db=0
+            url="redis://127.0.0.1:6379", decode_responses=True, db=0
         )
         self.user = user
 
@@ -51,7 +50,7 @@ class FileCacheEntry:
         """Create a new file cache entry for the specified directory."""
         self.dir_id = dir_id
         self.redis_connection = redis.Redis().from_url(
-            url="redis://170.64.180.130:6379", decode_responses=True, db=1
+            url="redis://127.0.0.1:6379", decode_responses=True, db=1
         )
 
     def activate_file_session(self):
@@ -118,15 +117,13 @@ class FileListener(RedisController):
         self.redis = RedisController(user_id)
         self.session_id = session_id
 
-    def add_checksum(self, data):
-        checksum = hashlib.sha256(data).hexdigest()
-        return {"data": data, "checksum": checksum}
-
-    def store_data_with_checksum(self, data_dict):
-        data_key = f"data_key:{self.user_id}"
-        self.redis.redis_connection.set(data_key, json.dumps(data_dict))
-
     def file_listener(self):
+        """
+        The `file_listener` function reads files from a directory,
+        encodes them in base64, and stores them
+        in a dictionary before saving the dictionary to a Redis database.
+        """
+        # self.path / str(self.session_id)
         time.sleep(2)
         files_index = open(f"{self.session_id}.internal.json", "r").read()
         data = json.loads(files_index)
@@ -137,13 +134,10 @@ class FileListener(RedisController):
         for _ in data:
             with open(_[0], "rb") as file_read_buffer:
                 file_read_buffer = file_read_buffer.read()
-
-            data_with_checksum = self.add_checksum(file_read_buffer)
             dispatch_dict[str(self.user_id)].append(
                 {
-                    str(_[0]): base64.encodebytes(data_with_checksum["data"]).decode(),
-                    "checksum": data_with_checksum["checksum"],
-                    "file_data": {
+                    str(_[0]): base64.encodebytes(file_read_buffer).decode(),
+                    "data": {
                         "id": (str(_[1]["file_id"])),
                         "size": (str(_[1]["file_size"])),
                     },
@@ -151,4 +145,4 @@ class FileListener(RedisController):
             )
 
         dispatch_dict = str(dispatch_dict).replace("'", '"')
-        self.store_data_with_checksum(dispatch_dict)
+        self.redis.set_files(dispatch_dict)

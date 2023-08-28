@@ -43,17 +43,16 @@ class CompressionImpl:
 
     def temp_compression_save(self, file_path: str) -> str:
         temp_file_index = file_path.find("temp_file")
-
         parsed_file_path: str = file_path[:temp_file_index]
-
         file_uuid: str = file_path[temp_file_index:][9:-4]
-
         return f"{parsed_file_path}/compressed_temp{file_uuid}"
 
     def commit_to_ipfs(self, file, filename: str, user, db) -> str:
+   
         cid: str = produce_cid(file, filename)
-        print(cid)
         data_record = assemble_record(file, filename, cid, user.id)
         db.add(data_record)
         db.commit()
-        db.flush()
+
+
+#NOTE - check chatgpt for the transaction issue. 
