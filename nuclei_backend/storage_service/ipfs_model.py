@@ -17,5 +17,5 @@ class DataStorage(Base):
     file_type = Column(String)
     file_upload_date = Column(String)
 
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
     owner = relationship("User", back_populates="data")

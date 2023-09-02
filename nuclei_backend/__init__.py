@@ -45,12 +45,13 @@ class Nuclei(FastAPI):
     @lru_cache(maxsize=None)
     def add_models(self):
         from .database import engine
-
+        from .user_quota import quota_models
         from .storage_service import ipfs_model
         from .users import user_models
 
         user_models.Base.metadata.create_all(bind=engine)
         ipfs_model.Base.metadata.create_all(bind=engine)
+        quota_models.Base.metadata.create_all(bind=engine)
 
 
 app = Nuclei()
