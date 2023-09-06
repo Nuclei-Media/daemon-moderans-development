@@ -1,23 +1,16 @@
-import hashlib
 import json
-import time
 import typing
-from fastapi_utils.tasks import repeat_every
 from fastapi import Depends
-from fastapi import BackgroundTasks, status
-from concurrent.futures import ThreadPoolExecutor
 
 from ..storage_service.ipfs_model import DataStorage
 from ..users.auth_utils import get_current_user
 from ..users.user_handler_utils import get_db
 from ..users.user_models import User
 from .sync_service_main import sync_router
-from .sync_user_cache import FileSessionManager, FileListener, RedisController
+from .sync_user_cache import FileListener, RedisController
 from .sync_utils import (
     UserDataExtraction,
-    get_collective_bytes,
     get_user_cid,
-    get_user_cids,
 )
 
 

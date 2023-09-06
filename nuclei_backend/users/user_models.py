@@ -15,3 +15,4 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     data = relationship("DataStorage", back_populates="owner")
+    data_quota = relationship("UserQuota", back_populates="owner")

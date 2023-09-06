@@ -27,6 +27,7 @@ class Nuclei(FastAPI):
             allow_methods=["*"],
             allow_headers=["*"],
         )
+
         self.add_middleware(
             SessionMiddleware,
             secret_key=f"{uuid.uuid4()}{secrets.token_hex(25)}{uuid.uuid4()}{secrets.token_urlsafe(25)}",
@@ -37,17 +38,19 @@ class Nuclei(FastAPI):
         from nuclei_backend.users.main import users_router
         from nuclei_backend.storage_service.main import storage_service
         from nuclei_backend.syncing_service.sync_service_main import sync_router
+        from nuclei_backend.user_quota.user_quota_main import quota_router
 
         self.include_router(storage_service)
         self.include_router(users_router)
         self.include_router(sync_router)
+        self.include_router(quota_router)
 
     @lru_cache(maxsize=None)
     def add_models(self):
         from .database import engine
-        from .user_quota import quota_models
         from .storage_service import ipfs_model
         from .users import user_models
+        from .user_quota import quota_models
 
         user_models.Base.metadata.create_all(bind=engine)
         ipfs_model.Base.metadata.create_all(bind=engine)
