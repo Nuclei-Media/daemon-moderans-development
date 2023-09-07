@@ -4,15 +4,15 @@ from ..users.user_handler_utils import get_db
 from fastapi import Depends
 from ..users.user_models import User
 from .quota_utils import increase_quota, decrease_quota, get_current_quota
-from ..syncing_service.sync_utils import get_collective_bytes
+from ..syncing_service.sync_utils import get_collective_bytes, get_file_count
 
 
 @quota_router.post("/increase")
 def increase_endpoint(
+    increase_amount: int,
+    files_count: int,
     user: User = Depends(get_current_user),
     db=Depends(get_db),
-    increase_amount=int,
-    files_count=int,
 ):
     current_byte_amount = get_current_quota(user.id, db)
     if (current_byte_amount + increase_amount) == current_byte_amount:
@@ -26,10 +26,10 @@ def increase_endpoint(
 
 @quota_router.post("/decrease")
 def decrease_endpoint(
+    decrease_amount: int,
+    files_count: int,
     user: User = Depends(get_current_user),
     db=Depends(get_db),
-    decrease_amount=int,
-    files_count=int,
 ):
     current_byte_amount = get_current_quota(user.id, db)
     if (current_byte_amount + decrease_amount) == current_byte_amount:
@@ -48,5 +48,15 @@ def update_quota_endpoint(
 ):
     current_quota = get_current_quota(user.id, db)
     current_byte_count = get_collective_bytes(user.id, db)
+    if current_quota != current_byte_count:
+        increase_quota(user.id, db, current_byte_count, get_file_count(user.id, db))
 
     return {"current quota": current_quota, "current byte count": current_byte_count}
+
+
+@quota_router.post("/state")
+def quota_state_endpoint(
+    user: User = Depends(get_current_user),
+    db=Depends(get_db),
+):
+    return {"state": get_current_quota(user.id, db)}

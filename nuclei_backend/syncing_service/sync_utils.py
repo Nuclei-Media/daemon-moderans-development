@@ -48,6 +48,15 @@ def get_collective_bytes(user_id, db):
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
 
+def get_file_count(user_id, db):
+    try:
+        query = db.query(DataStorage).filter(DataStorage.owner_id == user_id)
+        return query.count()
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail="Internal Server Error") from e
+
+
 class UserDataExtraction:
     def __init__(self, user_id, db, cids: list):
         self.user_id = user_id

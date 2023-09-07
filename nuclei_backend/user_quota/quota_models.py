@@ -14,4 +14,4 @@ class UserQuota(Base):
     amount_of_files = Column(Integer)
 
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    owner = relationship("User", back_populates="data")
+    owner = relationship("User", back_populates="data_quota")
