@@ -16,13 +16,12 @@ def initialise_quota(user_id, db):
 def increase_quota(user_id, db, increase_amount, files_being_committed):
     current_quota = get_current_quota(user_id, db)
 
-    increasing_query = UserQuota(
-        user_quota=current_quota.user_quota + increase_amount,
-        last_update=str(datetime.datetime.now()),
-        amount_of_files=current_quota.amount_of_files + files_being_committed,
-        owner_id=user_id,
+    current_quota.user_quota = current_quota.user_quota + increase_amount
+    current_quota.last_update = str(datetime.datetime.now())
+    current_quota.amount_of_files = (
+        current_quota.amount_of_files + files_being_committed
     )
-    db.add(increasing_query)
+    current_quota.owner_id = user_id
     db.commit()
 
 

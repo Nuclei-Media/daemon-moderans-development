@@ -93,7 +93,7 @@ def assemble_record(file: bytes, filename: str, cid: str, owner_id: int = None):
         file_cid=cid,
         file_hash=generate_hash(cid),
         file_size=len(file),
-        file_type=os.path.splitext(file)[1],
+        file_type=filename.split(".")[1],
         file_upload_date=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         owner_id=owner_id,
     )

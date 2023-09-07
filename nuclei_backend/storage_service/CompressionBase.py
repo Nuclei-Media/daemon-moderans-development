@@ -48,11 +48,11 @@ class CompressionImpl:
         return f"{parsed_file_path}/compressed_temp{file_uuid}"
 
     def commit_to_ipfs(self, file, filename: str, user, db) -> str:
-   
         cid: str = produce_cid(file, filename)
         data_record = assemble_record(file, filename, cid, user.id)
         db.add(data_record)
+
         db.commit()
 
 
-#NOTE - check chatgpt for the transaction issue. 
+# NOTE - check chatgpt for the transaction issue.

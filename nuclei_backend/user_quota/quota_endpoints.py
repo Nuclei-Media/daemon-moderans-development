@@ -20,6 +20,7 @@ def increase_endpoint(
     else:
         try:
             increase_quota(user.id, db, increase_amount, files_count)
+            return {"message": "increased"}
         except Exception as e:
             return {"error": e}
 
